@@ -1,6 +1,12 @@
 {
   "rules": {
     ".read": false,
-    ".write": false
+    "room": {
+      "$rid": {
+        "createdBy": {
+          ".validate": "(!data.parent().exists() && newData.val() === auth.uid) || !newData.parent().exists()"
+        }
+      }
+    }
   }
 }

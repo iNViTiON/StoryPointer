@@ -5,7 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "watch": "ng build --watch --configuration development"
+    "watch": "ng build --watch --configuration development",
+    "dbrules": "firebase deploy --only database",
+    "functions": "yarn workspace functions deploy"
   },
   "private": true,
   "workspaces": [
