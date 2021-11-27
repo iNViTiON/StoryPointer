@@ -4,8 +4,13 @@
     "room": {
       "$rid": {
         "createdBy": {
+          ".read": true,
           ".validate": "(!data.parent().exists() && newData.val() === auth.uid) || !newData.parent().exists()"
-        }
+        },
+        "member": {
+          ".read": ""
+        },
+        ".write": "auth !== null"
       }
     }
   }

@@ -1,0 +1,12 @@
+{{ roomId$ | push | json }} - {{ roomExist$ | push | json }}
+<ng-container *rxLet="roomId$; let roomId; rxSuspense: noRoom">
+  {{ roomId }}
+</ng-container>
+
+<ng-template #noRoom>
+  <div class="full center">
+    <button mat-flat-button color="primary" (click)="newRoom()">
+      New Room
+    </button>
+  </div>
+</ng-template>
