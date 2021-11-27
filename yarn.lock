@@ -1832,6 +1832,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@rx-angular/cdk@npm:latest":
+  version: 1.0.0-alpha.11
+  resolution: "@rx-angular/cdk@npm:1.0.0-alpha.11"
+  dependencies:
+    tslib: ^2.0.0
+  peerDependencies:
+    "@angular/core": ">10.1.1"
+    rxjs: ^7.4.0
+  checksum: e55002b442fd056330d8a5ed699b226f6d4cedfe784a9193fed339df0c28c93a1e935e4e4c10cad6361b1975e2f4b1af81ad88d2a5fd5deefc657c20d2e89ef7
+  languageName: node
+  linkType: hard
+
+"@rx-angular/template@npm:1.0.0-beta.29":
+  version: 1.0.0-beta.29
+  resolution: "@rx-angular/template@npm:1.0.0-beta.29"
+  dependencies:
+    tslib: ^2.0.0
+  peerDependencies:
+    "@angular/core": ">10.1.1"
+    "@rx-angular/cdk": ">=1.0.0-alpha.11"
+  checksum: 77f68a2b076e37c6a69c23fdf2aa95ef122ecf4a6d3e535f24d4db953dc5e4f1262298c0751e1cb1904e1da658697b34b65532ec53b365d4f28c909cc97d178b
+  languageName: node
+  linkType: hard
+
 "@schematics/angular@npm:13.0.3":
   version: 13.0.3
   resolution: "@schematics/angular@npm:13.0.3"
@@ -7362,6 +7386,8 @@ __metadata:
     "@angular/platform-browser": ~13.0.0
     "@angular/platform-browser-dynamic": ~13.0.0
     "@angular/router": ~13.0.0
+    "@rx-angular/cdk": latest
+    "@rx-angular/template": 1.0.0-beta.29
     "@types/node": ^12.11.1
     rxjs: ~7.4.0
     tslib: ^2.3.0
