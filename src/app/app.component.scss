@@ -1,10 +1,14 @@
 .full {
   height: 100vh;
+  position: absolute;
+  top: 0;
   width: 100vw;
 }
 
 .center {
-  display: flex;
-  justify-content: center;
   align-items: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  row-gap: 10vw;
 }

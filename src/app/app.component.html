@@ -1,12 +1,39 @@
-{{ roomId$ | push | json }} - {{ roomExist$ | push | json }}
-<ng-container *rxLet="roomId$; let roomId; rxSuspense: noRoom">
-  {{ roomId }}
-</ng-container>
+<ng-container *ngIf="mainSwitch$ | push">
+  {{ roomId$ | push | json }} - {{ roomExist$ | push | json }}
+  <br />
+  <ng-container *rxLet="roomId$ as roomId; rxSuspense: noRoom">
+    {{ roomId }}
+    <ng-container *rxLet="roomExist$ as roomExist; rxSuspense: loadingRoom">
+      <ng-container
+        *ngIf="roomExist === false; then roomNotFound; else working"
+      ></ng-container>
+    </ng-container>
+  </ng-container>
 
-<ng-template #noRoom>
-  <div class="full center">
-    <button mat-flat-button color="primary" (click)="newRoom()">
-      New Room
-    </button>
-  </div>
-</ng-template>
+  <ng-template #loadingRoom>
+    <div class="full center">Loading room data…</div>
+  </ng-template>
+
+  <ng-template #roomNotFound>
+    <div class="full center">
+      Room not found <br />
+      <button mat-flat-button color="accent" (click)="home()">
+        Back to home
+      </button>
+    </div>
+  </ng-template>
+
+  <ng-template #noRoom>
+    <div class="full center">
+      <button mat-flat-button color="primary" (click)="newRoom()">
+        New Room
+      </button>
+    </div>
+  </ng-template>
+
+  <ng-template #working>
+    <div class="full center">
+      {{ roomData$ | push | json }}
+    </div>
+  </ng-template>
+</ng-container>

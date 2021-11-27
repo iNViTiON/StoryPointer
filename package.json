@@ -1,5 +1,18 @@
 {
   "name": "story-pointer",
+  "author": {
+    "email": "iNViTiON@users.noreply.github.com",
+    "name": "Ittipol Thirasat",
+    "url": "https://github.com/iNViTiON"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iNViTiON/StoryPointer.git"
+  },
+  "bugs": {
+    "email": "iNViTiON@users.noreply.github.com",
+    "url": "https://github.com/iNViTiON/StoryPointer/issues"
+  },
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -7,6 +20,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "dbrules": "firebase deploy --only database",
+    "fsrules": "firebase deploy --only firestore",
     "functions": "yarn workspace functions deploy"
   },
   "private": true,

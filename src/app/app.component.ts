@@ -6,10 +6,37 @@ import {
   signInAnonymously,
   user,
 } from "@angular/fire/auth";
-import { Database, objectVal, push, ref } from "@angular/fire/database";
+import type { DocumentData } from "@angular/fire/firestore";
+import {
+  addDoc,
+  arrayUnion,
+  collection,
+  doc,
+  docSnapshots,
+  Firestore,
+  serverTimestamp,
+  updateDoc,
+} from "@angular/fire/firestore";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import { filter, first, map, mapTo, Observable, switchMap } from "rxjs";
+import {
+  combineLatest,
+  delay,
+  delayWhen,
+  filter,
+  first,
+  from,
+  map,
+  mapTo,
+  merge,
+  Observable,
+  of,
+  ReplaySubject,
+  share,
+  startWith,
+  Subject,
+  switchMap,
+} from "rxjs";
 
 @Component({
   selector: "app-root",
@@ -18,12 +45,18 @@ import { filter, first, map, mapTo, Observable, switchMap } from "rxjs";
 })
 export class AppComponent implements OnInit {
   public roomId$: Observable<string>;
-  public roomExist$: Observable<unknown>;
+  public roomData$: Observable<DocumentData>;
+  public roomExist$: Observable<boolean>;
+  #mainSwitchSubject$ = new Subject<void>();
+  public mainSwitch$ = this.#mainSwitchSubject$.pipe(
+    startWith(undefined),
+    switchMap(() => merge(of(false), of(true).pipe(delay(1))))
+  );
 
   constructor(
     private activatedRoute: ActivatedRoute,
     private fireAuth: Auth,
-    private fireDatabase: Database,
+    private firestore: Firestore,
     private router: Router,
     private titleService: Title
   ) {
@@ -33,12 +66,32 @@ export class AppComponent implements OnInit {
         (fragment): fragment is string => fragment !== null && fragment !== ""
       )
     );
-    this.roomExist$ = this.roomId$.pipe(
-      switchMap((roomId) =>
-        objectVal(ref(this.fireDatabase, `room/${roomId}/createdBy`))
+    const roomRaw$ = combineLatest([
+      this.roomId$,
+      user(this.fireAuth).pipe(filter((user): user is User => user !== null)),
+    ]).pipe(
+      delayWhen(([roomId, user]) =>
+        from(
+          updateDoc(doc(this.firestore, `/rooms/${roomId}`), {
+            members: arrayUnion(user.uid),
+          }).catch(() => undefined)
+        )
       ),
-      map((createdBy) => createdBy !== null)
+      switchMap(([roomId]) =>
+        docSnapshots(doc(this.firestore, `/rooms/${roomId}`))
+      ),
+      share({
+        connector: () => new ReplaySubject(1),
+        resetOnComplete: true,
+        resetOnError: true,
+        resetOnRefCountZero: true,
+      })
     );
+    this.roomData$ = roomRaw$.pipe(
+      map((snapshot) => snapshot.data()),
+      filter((data): data is DocumentData => data !== undefined)
+    );
+    this.roomExist$ = roomRaw$.pipe(map((snapshot) => snapshot.exists()));
 
     user(this.fireAuth)
       .pipe(filter((user) => user === null))
@@ -52,6 +105,10 @@ export class AppComponent implements OnInit {
     this.titleService.setTitle("Story Pointer");
   }
 
+  public home(): void {
+    this.router.navigate(["/"]).then(() => this.#mainSwitchSubject$.next());
+  }
+
   public newRoom(): void {
     this.activatedRoute.fragment
       .pipe(
@@ -62,16 +119,17 @@ export class AppComponent implements OnInit {
         ),
         mapTo(true),
         switchMap(() =>
-          push(ref(this.fireDatabase, "room"), {
+          addDoc(collection(this.firestore, "rooms"), {
+            createdAt: serverTimestamp(),
             createdBy: this.fireAuth.currentUser?.uid,
+            members: [this.fireAuth.currentUser?.uid],
           })
         ),
-        map((ref) => ref.key),
+        map((ref) => ref.id),
         first(),
         filter((roomId): roomId is string => roomId !== null)
       )
       .subscribe((roomId) => {
-        console.log(roomId);
         this.router.navigate(["/"], { fragment: roomId });
       });
   }
