@@ -53,3 +53,8 @@ Thumbs.db
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Firebase
+.firebase
+*-debug.log
+.runtimeconfig.json

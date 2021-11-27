@@ -1,0 +1,14 @@
+{
+  "targets": {
+    "storypointer-794f2": {
+      "hosting": {
+        "StoryPointer": [
+          "storypointer-794f2"
+        ]
+      }
+    }
+  },
+  "projects": {
+    "default": "storypointer-794f2"
+  }
+}

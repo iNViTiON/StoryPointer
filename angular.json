@@ -110,6 +110,16 @@
           "options": {
             "browserTarget": "StoryPointer:build"
           }
+        },
+        "deploy": {
+          "builder": "@angular/fire:deploy",
+          "options": {
+            "prerender": false,
+            "ssr": false,
+            "browserTarget": "StoryPointer:build:production",
+            "firebaseProject": "storypointer-794f2",
+            "firebaseHostingSite": "storypointer-794f2"
+          }
         }
       }
     }
