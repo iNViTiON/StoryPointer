@@ -1,12 +1,40 @@
 {
   "hosting": {
+    "target": "StoryPointer",
     "public": "dist/StoryPointer",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": ["**/.*"],
+    "headers": [
+      {
+        "source": "*.[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f].+(css|js)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public,max-age=31536000,immutable"
+          }
+        ]
+      },
+      {
+        "source": "/@(ngsw-worker.js|ngsw.json)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      }
+    ],
     "rewrites": [
       {
         "source": "**",
         "destination": "/index.html"
       }
+    ]
+  },
+  "functions": {
+    "source": "functions",
+    "predeploy": [
+      "yarn workspace functions lint",
+      "yarn workspace functions build"
     ]
   },
   "database": {
@@ -16,18 +44,15 @@
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   },
-  "functions": {
-    "predeploy": [
-      "yarn workspace functions lint",
-      "yarn workspace functions build"
-    ]
-  },
   "emulators": {
     "auth": {
       "port": 9099
     },
     "functions": {
       "port": 5001
+    },
+    "firestore": {
+      "port": 8080
     },
     "database": {
       "port": 9000

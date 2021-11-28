@@ -8,7 +8,7 @@
           ".validate": "(!data.parent().exists() && newData.val() === auth.uid) || !newData.parent().exists()"
         },
         "member": {
-          ".read": ""
+          ".read": "auth !== null"
         },
         ".write": "auth !== null"
       }

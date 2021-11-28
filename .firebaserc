@@ -1,14 +1,14 @@
 {
   "targets": {
-    "storypointer-794f2": {
+    "invition-storypointer": {
       "hosting": {
         "StoryPointer": [
-          "storypointer-794f2"
+          "invition-storypointer"
         ]
       }
     }
   },
   "projects": {
-    "default": "storypointer-794f2"
+    "default": "invition-storypointer"
   }
 }

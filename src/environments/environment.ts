@@ -4,15 +4,16 @@
 
 export const environment = {
   firebase: {
-    projectId: 'storypointer-794f2',
-    appId: '1:271936864591:web:85cc899f9c489b5009c53a',
-    databaseURL: 'https://storypointer-794f2-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'storypointer-794f2.appspot.com',
-    apiKey: 'AIzaSyClKsRibmtXjFOXnLH4tzHiyf2KSSo58II',
-    authDomain: 'storypointer-794f2.firebaseapp.com',
-    messagingSenderId: '271936864591',
+    projectId: 'invition-storypointer',
+    appId: '1:787149245832:web:8b4449dccb6606f3df3e3d',
+    databaseURL: 'https://invition-storypointer-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'invition-storypointer.appspot.com',
+    locationId: 'asia-southeast1',
+    apiKey: 'AIzaSyCGc4Igf5wuMaUUyDZaKs8B1WpZ6o8INFw',
+    authDomain: 'invition-storypointer.firebaseapp.com',
+    messagingSenderId: '787149245832',
   },
-  production: false
+  production: false,
 };
 
 /*
