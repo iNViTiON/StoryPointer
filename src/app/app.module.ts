@@ -1,7 +1,16 @@
 import { NgModule } from "@angular/core";
 import { initializeApp, provideFirebaseApp } from "@angular/fire/app";
-import { getAuth, provideAuth } from "@angular/fire/auth";
-import { getDatabase, provideDatabase } from "@angular/fire/database";
+import { connectAuthEmulator, getAuth, provideAuth } from "@angular/fire/auth";
+import {
+  connectDatabaseEmulator,
+  getDatabase,
+  provideDatabase,
+} from "@angular/fire/database";
+import {
+  connectFirestoreEmulator,
+  getFirestore,
+  provideFirestore,
+} from "@angular/fire/firestore";
 import { MatButtonModule } from "@angular/material/button";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
@@ -13,7 +22,6 @@ import {
 } from "@rx-angular/template";
 import { environment } from "../environments/environment";
 import { AppComponent } from "./app.component";
-import { provideFirestore,getFirestore } from '@angular/fire/firestore';
 
 @NgModule({
   declarations: [AppComponent],
@@ -25,10 +33,28 @@ import { provideFirestore,getFirestore } from '@angular/fire/firestore';
     PushModule,
     RouterModule.forRoot([]),
     ViewportPrioModule,
-    provideAuth(() => getAuth()),
-    provideDatabase(() => getDatabase()),
+    provideAuth(() => {
+      const auth = getAuth();
+      if (environment.useEmulators) {
+        connectAuthEmulator(auth, "http://localhost:9099");
+      }
+      return auth;
+    }),
+    provideDatabase(() => {
+      const database = getDatabase();
+      if (environment.useEmulators) {
+        connectDatabaseEmulator(database, "localhost", 9000);
+      }
+      return database;
+    }),
     provideFirebaseApp(() => initializeApp(environment.firebase)),
-    provideFirestore(() => getFirestore()),
+    provideFirestore(() => {
+      const firestore = getFirestore();
+      if (environment.useEmulators) {
+        connectFirestoreEmulator(firestore, "localhost", 8080);
+      }
+      return firestore;
+    }),
   ],
   providers: [],
   bootstrap: [AppComponent],
