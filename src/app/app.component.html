@@ -1,8 +1,8 @@
 <ng-container *ngIf="mainSwitch$ | push">
-  {{ roomId$ | push | json }} - {{ roomExist$ | push | json }}
+  {{ roomId$ | push | json }} - {{ roomExist$ | push | json }} - online:
+  {{ isRtdbOnline$ | push | json }}
   <br />
   <ng-container *rxLet="roomId$ as roomId; rxSuspense: noRoom">
-    {{ roomId }}
     <ng-container *rxLet="roomExist$ as roomExist; rxSuspense: loadingRoom">
       <ng-container
         *ngIf="roomExist === false; then roomNotFound; else working"

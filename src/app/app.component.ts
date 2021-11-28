@@ -6,6 +6,7 @@ import {
   signInAnonymously,
   user,
 } from "@angular/fire/auth";
+import { Database, objectVal, ref } from "@angular/fire/database";
 import type { DocumentData } from "@angular/fire/firestore";
 import {
   addDoc,
@@ -47,6 +48,7 @@ export class AppComponent implements OnInit {
   public roomId$: Observable<string>;
   public roomData$: Observable<DocumentData>;
   public roomExist$: Observable<boolean>;
+  public isRtdbOnline$: Observable<boolean>;
   #mainSwitchSubject$ = new Subject<void>();
   public mainSwitch$ = this.#mainSwitchSubject$.pipe(
     startWith(undefined),
@@ -56,11 +58,13 @@ export class AppComponent implements OnInit {
   constructor(
     private activatedRoute: ActivatedRoute,
     private fireAuth: Auth,
+    private rtdb: Database,
     private firestore: Firestore,
     private router: Router,
     private titleService: Title
   ) {
     this.fireAuth.setPersistence(browserSessionPersistence);
+    this.isRtdbOnline$ = objectVal(ref(this.rtdb, ".info/connected"));
     this.roomId$ = this.activatedRoute.fragment.pipe(
       filter(
         (fragment): fragment is string => fragment !== null && fragment !== ""
