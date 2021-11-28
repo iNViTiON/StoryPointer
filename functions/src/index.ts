@@ -15,8 +15,8 @@ export const logUserCreatedAt = functions
     functions.logger.info(
       `User ${user.uid} created at ${user.metadata.creationTime}`
     );
-    admin.firestore().doc(`users/${user.uid}`).set({
-      createdAt: admin.firestore.FieldValue.serverTimestamp,
+    return admin.firestore().doc(`users/${user.uid}`).set({
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
   });
 
@@ -27,5 +27,5 @@ export const removeUser = functions
     functions.logger.info(
       `User ${user.uid} deleted at ${user.metadata.lastSignInTime}`
     );
-    admin.firestore().doc(`users/${user.uid}`).delete();
+    return admin.firestore().doc(`users/${user.uid}`).delete();
   });
