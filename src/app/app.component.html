@@ -2,6 +2,8 @@
   {{ roomId$ | push | json }} - {{ roomExist$ | push | json }} - online:
   {{ isRtdbOnline$ | push | json }}
   <br />
+  {{ userData$ | push | json }}
+  <br />
   <ng-container *rxLet="roomId$ as roomId; rxSuspense: noRoom">
     <ng-container *rxLet="roomExist$ as roomExist; rxSuspense: loadingRoom">
       <ng-container
@@ -34,6 +36,16 @@
   <ng-template #working>
     <div class="full center">
       {{ roomData$ | push | json }}
+      <div style="display: flex; flex-direction: row; row-gap: 5vw">
+        <button
+          *ngFor="let point of points"
+          mat-flat-button
+          color="primary"
+          (click)="vote(point)"
+        >
+          {{ point }}
+        </button>
+      </div>
     </div>
   </ng-template>
 </ng-container>

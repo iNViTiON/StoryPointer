@@ -12,7 +12,108 @@ service cloud.firestore {
         && request.resource.data.members.size() == 1
         && request.auth.uid in request.resource.data.members;
       allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(["members"])
-        && request.resource.data.members.toSet().difference(resource.data.members.toSet()).hasOnly([request.auth.uid]);
+        && request.resource.data.members.toSet().difference(resource.data.members.toSet()).hasOnly([request.auth.uid])
+        && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.forRoom == roomId;
+
+      match /vote/vote {
+        function voteChange(num) {
+          return request.resource.data.votes[num] - resource.data.votes.get(num, 0);
+        }
+        function voteValidate() {
+          let exist = resource != null;
+          return (exist && voteValidateStep1()) || (!exist && voteValidateStep2());
+        }
+        // existing vote
+        function voteValidateStep1() {
+          let voteFor = request.resource.data.for;
+          let voteForStrSet = [string(voteFor)].toSet();
+          let voteNum = request.resource.data.votes.diff(resource.data.votes).affectedKeys();
+          let userDocPath = /databases/$(database)/documents/users/$(request.auth.uid);
+          // lock to do batch write with vote in user doc
+          let validUpVote = voteChange(string(voteFor)) == 1
+            && get(userDocPath).data.get("vote", null) == null
+            && getAfter(userDocPath).data.get("vote", null) == voteFor;
+          let validCancelVote = voteChange(string(voteFor)) == -1
+            && get(userDocPath).data.get("vote", null) == voteFor
+            && getAfter(userDocPath).data.get("vote", null) == null;
+          return voteFor is int
+            && voteForStrSet.hasOnly(voteNum) && voteNum.hasOnly(voteForStrSet)
+            && voteNum.size() == 1
+            && (validUpVote || validCancelVote);
+        }
+        // first vote
+        function voteValidateStep2() {
+          let voteFor = request.resource.data.for;
+          let userDocPath = /databases/$(database)/documents/users/$(request.auth.uid);
+          // lock to do batch write with vote in user doc
+          let validUpVote = request.resource.data.votes[string(voteFor)] == 1
+            && get(userDocPath).data.get("vote", null) == null
+            && getAfter(userDocPath).data.get("vote", null) == voteFor;
+          return voteFor is int
+            && request.resource.data.votes.size() == 1
+            && validUpVote;
+        }
+        allow create, update: if request.auth.uid in get(/databases/$(database)/documents/rooms/$(roomId)).data.members
+          && voteValidate();
+      }
+    }
+    match /users/{userId} {
+      function beforeVote(roomId) {
+        return get(/databases/$(database)/documents/rooms/$(roomId)/vote/vote).data;
+      }
+      function afterVote(roomId) {
+        return getAfter(/databases/$(database)/documents/rooms/$(roomId)/vote/vote).data;
+      }
+      function affectedVote(roomId) {
+        return afterVote(roomId).votes.diff(beforeVote(roomId).votes).affectedKeys();
+      }
+      function justVote() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(["vote"])
+          && request.auth.uid in get(/databases/$(database)/documents/rooms/$(resource.data.forRoom)).data.members;
+      }
+      function validUpVote(roomId) {
+        let exist = exists(/databases/$(database)/documents/rooms/$(roomId)/vote/vote);
+        return (exist && validUpVoteStep3(roomId)) || (!exist && validUpVoteStep2(roomId))
+      }
+      // first vote
+      function validUpVoteStep2(roomId) {
+        let voteFor = request.resource.data.vote;
+        let vote = afterVote(roomId);
+        return voteFor is int
+          && resource.data.get("vote", null) == null
+          && vote.votes.size() == 1
+          && vote.get(["votes", string(voteFor)], 0) == 1;
+      }
+      // update exists vote
+      function validUpVoteStep3(roomId) {
+        let voteFor = request.resource.data.vote;
+        let oldAccumulateVote = beforeVote(roomId).get(["votes", string(voteFor)], 0);
+        let newAccumulateVote = afterVote(roomId).get(["votes", string(voteFor)], 0);
+        return voteFor is int
+          && affectedVote(roomId).size() == 1
+          && resource.data.get("vote", null) == null
+          && newAccumulateVote == oldAccumulateVote + 1;
+      }
+      function validCancelVote(roomId) {
+        let exist = exists(/databases/$(database)/documents/rooms/$(roomId)/vote/vote);
+        return exist && validCancelVoteStep1(roomId)
+      }
+      function validCancelVoteStep1(roomId) {
+        let voteFor = resource.data.vote;
+        let oldAccumulateVote = beforeVote(roomId).get(["votes", string(voteFor)], 0);
+        let newAccumulateVote = afterVote(roomId).get(["votes", string(voteFor)], 0);
+        return voteFor is int
+          && request.resource.data.get("vote", null) == null
+          && newAccumulateVote == oldAccumulateVote - 1;
+      }
+      allow read: if request.auth.uid == userId;
+      // when joining room and not allow to change room
+      allow create, update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(["forRoom"])
+        && request.resource.data.forRoom is string
+        && (resource.data.get("forRoom", null) == null || resource.data.forRoom == request.resource.data.forRoom)
+        && request.auth.uid in getAfter(/databases/$(database)/documents/rooms/$(request.resource.data.forRoom)).data.members;
+      allow update: if justVote() && validUpVote(resource.data.forRoom);
+      allow update: if justVote() && validCancelVote(resource.data.forRoom);
     }
   }
 }
