@@ -35,7 +35,12 @@
 
   <ng-template #working>
     <div class="full center">
-      Total {{ roomVoteCount$ | push | json }} vote(s)
+      {{ roomVoteCount$ | push | json }} /
+      {{ (roomData$ | push)?.members?.length }} vote(s)
+      <br />
+      <ng-container *ngIf="roomVoteResult$ | push as result">
+        {{ result | json }}
+      </ng-container>
       <br />
       {{ roomData$ | push | json }}
       <div class="vote-container">

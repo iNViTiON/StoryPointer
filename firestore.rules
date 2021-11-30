@@ -75,6 +75,11 @@ service cloud.firestore {
             && request.resource.data.votes.size() == 1
             && validUpVote;
         }
+        function seeResult() {
+          let roomData = get(/databases/$(database)/documents/rooms/$(roomId)).data;
+          return roomData.get("voteCount", 0) == roomData.members.size() || roomData.get("forceReveal", false);
+        }
+        allow read: if seeResult();
         allow create, update: if request.auth.uid in get(/databases/$(database)/documents/rooms/$(roomId)).data.members
           && voteValidate();
       }

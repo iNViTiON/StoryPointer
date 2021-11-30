@@ -40,6 +40,7 @@ import {
   startWith,
   Subject,
   switchMap,
+  withLatestFrom,
 } from "rxjs";
 
 @Component({
@@ -48,17 +49,21 @@ import {
   styleUrls: ["./app.component.scss"],
 })
 export class AppComponent implements OnInit {
-  public roomId$: Observable<string>;
-  public roomData$: Observable<RoomData>;
-  public roomExist$: Observable<boolean>;
-  public roomVoteCount$: Observable<number>;
-  public isRtdbOnline$: Observable<boolean>;
-  public userData$: Observable<UserData>;
   #mainSwitchSubject$ = new Subject<void>();
   public mainSwitch$ = this.#mainSwitchSubject$.pipe(
     startWith(undefined),
     switchMap(() => merge(of(false), of(true).pipe(delay(1))))
   );
+
+  public isRtdbOnline$: Observable<boolean>;
+
+  public roomId$: Observable<string>;
+  public roomData$: Observable<RoomData>;
+  public roomExist$: Observable<boolean>;
+  public roomVoteCount$: Observable<number>;
+  public roomVoteResult$: Observable<null | Omit<RoomVoteData, `for`>>;
+  public userData$: Observable<UserData>;
+
   private roomCollection: CollectionReference<RoomData>;
   private userCollection: CollectionReference<UserData>;
 
@@ -146,13 +151,43 @@ export class AppComponent implements OnInit {
     this.roomVoteCount$ = this.roomData$.pipe(
       map((data) => data.voteCount ?? 0)
     );
+    this.roomVoteResult$ = this.roomData$.pipe(
+      map((data) => data.members.length === data.voteCount),
+      withLatestFrom(
+        this.roomId$.pipe(
+          map((roomId) =>
+            doc(
+              collection(
+                this.firestore,
+                `/rooms/${roomId}/vote`
+              ) as CollectionReference<RoomVoteData>,
+              `vote`
+            )
+          )
+        )
+      ),
+      switchMap(([reveal, voteDoc]) =>
+        reveal ? docSnapshots(voteDoc) : of(undefined)
+      ),
+      map((snapshot) => snapshot?.data()),
+      map((roomVoteData) => {
+        if (roomVoteData !== undefined) {
+          const { for: _for, ...omitFor } = roomVoteData;
+          return omitFor;
+        }
+        return null;
+      }),
+      share({
+        connector: () => new ReplaySubject(1),
+        resetOnComplete: true,
+        resetOnError: true,
+        resetOnRefCountZero: true,
+      })
+    );
 
     user(this.fireAuth)
       .pipe(filter((user) => user === null))
       .subscribe(() => signInAnonymously(this.fireAuth));
-    user(this.fireAuth)
-      .pipe(filter((user): user is User => user !== null))
-      .subscribe((user) => console.log(user));
   }
 
   public ngOnInit(): void {
