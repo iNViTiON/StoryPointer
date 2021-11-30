@@ -5,19 +5,38 @@ service cloud.firestore {
       allow read, write: if false;
     }
     match /rooms/{roomId} {
-      allow read: if resource == null;
+      allow read: if resource == null; // to let the client know that the room doesn't exist
       allow read: if request.auth.uid in resource.data.members;
       allow create: if request.resource.data.createdAt == request.time
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.members.size() == 1
         && request.auth.uid in request.resource.data.members;
+      // member join
       allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(["members"])
         && request.resource.data.members.toSet().difference(resource.data.members.toSet()).hasOnly([request.auth.uid])
         && getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.forRoom == roomId;
+      // update vote
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(["voteCount"])
+        && math.abs(request.resource.data.voteCount - resource.data.get("voteCount", 0)) == 1
+        && (
+      // first vote
+      (!exists(/databases/$(database)/documents/rooms/$(roomId)/vote/vote) && existsAfter(/databases/$(database)/documents/rooms/$(roomId)/vote/vote))
+      // existing vote
+        || (
+      exists(/databases/$(database)/documents/rooms/$(roomId)/vote/vote)
+        && (
+      getAfter(/databases/$(database)/documents/rooms/$(roomId)/vote/vote).data.votes
+      != get(/databases/$(database)/documents/rooms/$(roomId)/vote/vote).data.votes
+      )
+      )
+      );
 
       match /vote/vote {
         function voteChange(num) {
           return request.resource.data.votes[num] - resource.data.votes.get(num, 0);
+        }
+        function roomVoteChange(roomPath) {
+          return getAfter(roomPath).data.voteCount - get(roomPath).data.get("voteCount", 0);
         }
         function voteValidate() {
           let exist = resource != null;
@@ -28,15 +47,18 @@ service cloud.firestore {
           let voteFor = request.resource.data.for;
           let voteForStrSet = [string(voteFor)].toSet();
           let voteNum = request.resource.data.votes.diff(resource.data.votes).affectedKeys();
+          let roomPath = /databases/$(database)/documents/rooms/$(roomId);
           let userDocPath = /databases/$(database)/documents/users/$(request.auth.uid);
           // lock to do batch write with vote in user doc
           let validUpVote = voteChange(string(voteFor)) == 1
             && get(userDocPath).data.get("vote", null) == null
-            && getAfter(userDocPath).data.get("vote", null) == voteFor;
+            && getAfter(userDocPath).data.get("vote", null) == voteFor
+            && roomVoteChange(roomPath) == 1;
           let validCancelVote = voteChange(string(voteFor)) == -1
             && get(userDocPath).data.get("vote", null) == voteFor
-            && getAfter(userDocPath).data.get("vote", null) == null;
-          return voteFor is int
+            && getAfter(userDocPath).data.get("vote", null) == null
+            && roomVoteChange(roomPath) == -1;
+          return voteFor is number
             && voteForStrSet.hasOnly(voteNum) && voteNum.hasOnly(voteForStrSet)
             && voteNum.size() == 1
             && (validUpVote || validCancelVote);
@@ -49,7 +71,7 @@ service cloud.firestore {
           let validUpVote = request.resource.data.votes[string(voteFor)] == 1
             && get(userDocPath).data.get("vote", null) == null
             && getAfter(userDocPath).data.get("vote", null) == voteFor;
-          return voteFor is int
+          return voteFor is number
             && request.resource.data.votes.size() == 1
             && validUpVote;
         }
@@ -79,7 +101,7 @@ service cloud.firestore {
       function validUpVoteStep2(roomId) {
         let voteFor = request.resource.data.vote;
         let vote = afterVote(roomId);
-        return voteFor is int
+        return voteFor is number
           && resource.data.get("vote", null) == null
           && vote.votes.size() == 1
           && vote.get(["votes", string(voteFor)], 0) == 1;
@@ -89,7 +111,7 @@ service cloud.firestore {
         let voteFor = request.resource.data.vote;
         let oldAccumulateVote = beforeVote(roomId).get(["votes", string(voteFor)], 0);
         let newAccumulateVote = afterVote(roomId).get(["votes", string(voteFor)], 0);
-        return voteFor is int
+        return voteFor is number
           && affectedVote(roomId).size() == 1
           && resource.data.get("vote", null) == null
           && newAccumulateVote == oldAccumulateVote + 1;
@@ -102,7 +124,7 @@ service cloud.firestore {
         let voteFor = resource.data.vote;
         let oldAccumulateVote = beforeVote(roomId).get(["votes", string(voteFor)], 0);
         let newAccumulateVote = afterVote(roomId).get(["votes", string(voteFor)], 0);
-        return voteFor is int
+        return voteFor is number
           && request.resource.data.get("vote", null) == null
           && newAccumulateVote == oldAccumulateVote - 1;
       }

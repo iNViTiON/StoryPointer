@@ -191,26 +191,23 @@ export class AppComponent implements OnInit {
         const isVote = currentVote === undefined;
         const forv = isVote ? n : currentVote;
         const batch = writeBatch(this.firestore);
+        const roomDoc = doc(this.firestore, `/rooms/${roomId}`);
         const voteDoc = doc(this.firestore, `/rooms/${roomId}/vote/vote`);
         const userDoc = doc(this.firestore, `/users/${user.uid}`);
+        batch.update(roomDoc, `voteCount`, increment(isVote ? 1 : -1));
         batch.update(voteDoc, `votes.${forv}`, increment(isVote ? 1 : -1));
         batch.update(voteDoc, `for`, forv);
-        if (isVote) {
-          batch.update(userDoc, `vote`, n);
-        } else {
-          batch.update(userDoc, `vote`, deleteField());
-        }
+        batch.update(userDoc, `vote`, isVote ? n : deleteField());
         batch
           .commit()
           .catch((err) => {
             if (err.code !== `not-found`) {
               throw err;
             }
+            // first voter
             const createBatch = writeBatch(this.firestore);
-            createBatch.set(voteDoc, {
-              votes: { [n]: 1 },
-            });
-            createBatch.update(voteDoc, `for`, n);
+            createBatch.update(roomDoc, `voteCount`, 1);
+            createBatch.set(voteDoc, { votes: { [n]: 1 }, for: n });
             createBatch.update(userDoc, `vote`, n);
             return createBatch.commit();
           })
