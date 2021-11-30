@@ -35,6 +35,8 @@
 
   <ng-template #working>
     <div class="full center">
+      Total {{ roomVoteCount$ | push | json }} vote(s)
+      <br />
       {{ roomData$ | push | json }}
       <div class="vote-container">
         <button

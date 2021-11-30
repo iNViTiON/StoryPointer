@@ -7,7 +7,7 @@ import {
   user,
 } from "@angular/fire/auth";
 import { Database, objectVal, ref } from "@angular/fire/database";
-import type { DocumentData } from "@angular/fire/firestore";
+import type { CollectionReference, Timestamp } from "@angular/fire/firestore";
 import {
   addDoc,
   arrayUnion,
@@ -49,15 +49,18 @@ import {
 })
 export class AppComponent implements OnInit {
   public roomId$: Observable<string>;
-  public roomData$: Observable<DocumentData>;
+  public roomData$: Observable<RoomData>;
   public roomExist$: Observable<boolean>;
+  public roomVoteCount$: Observable<number>;
   public isRtdbOnline$: Observable<boolean>;
-  public userData$: Observable<unknown>;
+  public userData$: Observable<UserData>;
   #mainSwitchSubject$ = new Subject<void>();
   public mainSwitch$ = this.#mainSwitchSubject$.pipe(
     startWith(undefined),
     switchMap(() => merge(of(false), of(true).pipe(delay(1))))
   );
+  private roomCollection: CollectionReference<RoomData>;
+  private userCollection: CollectionReference<UserData>;
 
   public points = [0.5, 1, 2, 3, 5, 8, 13];
 
@@ -70,6 +73,14 @@ export class AppComponent implements OnInit {
     private titleService: Title
   ) {
     this.fireAuth.setPersistence(browserSessionPersistence);
+    this.roomCollection = collection(
+      this.firestore,
+      "rooms"
+    ) as CollectionReference<RoomData>;
+    this.userCollection = collection(
+      this.firestore,
+      "users"
+    ) as CollectionReference<UserData>;
     this.isRtdbOnline$ = objectVal<boolean>(
       ref(this.rtdb, ".info/connected")
     ).pipe(
@@ -83,9 +94,10 @@ export class AppComponent implements OnInit {
     this.userData$ = user(this.fireAuth).pipe(
       filter((user): user is User => user !== null),
       switchMap((user) =>
-        docSnapshots(doc(this.firestore, `/users/${user.uid}`))
+        docSnapshots(doc<UserData>(this.userCollection, user.uid))
       ),
       map((snapshot) => snapshot.data()),
+      filter((data): data is UserData => data !== undefined),
       share({
         connector: () => new ReplaySubject(1),
         resetOnComplete: true,
@@ -104,11 +116,11 @@ export class AppComponent implements OnInit {
     ]).pipe(
       delayWhen(([roomId, user]) => {
         const batch = writeBatch(this.firestore);
-        batch.update(doc(this.firestore, `/rooms/${roomId}`), {
+        batch.update(doc<RoomData>(this.roomCollection, roomId), {
           members: arrayUnion(user.uid),
         });
         batch.update(
-          doc(this.firestore, `/users/${user.uid}`),
+          doc<UserData>(this.userCollection, user.uid),
           `forRoom`,
           roomId
         );
@@ -117,7 +129,7 @@ export class AppComponent implements OnInit {
         );
       }),
       switchMap(([roomId]) =>
-        docSnapshots(doc(this.firestore, `/rooms/${roomId}`))
+        docSnapshots(doc<RoomData>(this.roomCollection, roomId))
       ),
       share({
         connector: () => new ReplaySubject(1),
@@ -128,9 +140,12 @@ export class AppComponent implements OnInit {
     );
     this.roomData$ = roomRaw$.pipe(
       map((snapshot) => snapshot.data()),
-      filter((data): data is DocumentData => data !== undefined)
+      filter((data): data is RoomData => data !== undefined)
     );
     this.roomExist$ = roomRaw$.pipe(map((snapshot) => snapshot.exists()));
+    this.roomVoteCount$ = this.roomData$.pipe(
+      map((data) => data.voteCount ?? 0)
+    );
 
     user(this.fireAuth)
       .pipe(filter((user) => user === null))
@@ -191,9 +206,13 @@ export class AppComponent implements OnInit {
         const isVote = currentVote === undefined;
         const forv = isVote ? n : currentVote;
         const batch = writeBatch(this.firestore);
-        const roomDoc = doc(this.firestore, `/rooms/${roomId}`);
-        const voteDoc = doc(this.firestore, `/rooms/${roomId}/vote/vote`);
-        const userDoc = doc(this.firestore, `/users/${user.uid}`);
+        const voteCollection = collection(
+          this.firestore,
+          `/rooms/${roomId}/vote`
+        ) as CollectionReference<RoomVoteData>;
+        const roomDoc = doc<RoomData>(this.roomCollection, roomId);
+        const voteDoc = doc<RoomVoteData>(voteCollection, `vote`);
+        const userDoc = doc<UserData>(this.userCollection, user.uid);
         batch.update(roomDoc, `voteCount`, increment(isVote ? 1 : -1));
         batch.update(voteDoc, `votes.${forv}`, increment(isVote ? 1 : -1));
         batch.update(voteDoc, `for`, forv);
@@ -214,4 +233,22 @@ export class AppComponent implements OnInit {
           .then(() => (isVote ? undefined : this.vote(n)));
       });
   }
+}
+
+interface UserData {
+  createdAt: Timestamp;
+  forRoom?: string;
+  vote?: number;
+}
+
+interface RoomData {
+  createdAt: Timestamp;
+  createdBy: string;
+  members: string[];
+  voteCount?: number;
+}
+
+interface RoomVoteData {
+  for: number;
+  votes: { [key: number]: number };
 }
