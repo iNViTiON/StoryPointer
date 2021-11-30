@@ -12,3 +12,9 @@
   justify-content: center;
   row-gap: 10vw;
 }
+
+.vote-container {
+  display: flex;
+  flex-direction: row;
+  column-gap: 1vw;
+}

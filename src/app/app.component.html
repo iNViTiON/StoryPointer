@@ -36,7 +36,7 @@
   <ng-template #working>
     <div class="full center">
       {{ roomData$ | push | json }}
-      <div style="display: flex; flex-direction: row; row-gap: 5vw">
+      <div class="vote-container">
         <button
           *ngFor="let point of points"
           mat-flat-button
