@@ -35,11 +35,13 @@ import {
   Observable,
   of,
   ReplaySubject,
+  retryWhen,
   share,
   skip,
   startWith,
   Subject,
   switchMap,
+  tap,
   withLatestFrom,
 } from "rxjs";
 
@@ -151,8 +153,11 @@ export class AppComponent implements OnInit {
     this.roomVoteCount$ = this.roomData$.pipe(
       map((data) => data.voteCount ?? 0)
     );
-    this.roomVoteResult$ = this.roomData$.pipe(
-      map((data) => data.members.length === data.voteCount),
+    this.roomVoteResult$ = roomRaw$.pipe(
+      // check pending write to prevent local data reveal when DB not write yet
+      map((snapshot) => !snapshot.metadata.hasPendingWrites && snapshot.data()),
+      filter((data): data is false | RoomData => data !== undefined),
+      map((data) => data !== false && data.members.length === data.voteCount),
       withLatestFrom(
         this.roomId$.pipe(
           map((roomId) =>
@@ -167,9 +172,10 @@ export class AppComponent implements OnInit {
         )
       ),
       switchMap(([reveal, voteDoc]) =>
-        reveal ? docSnapshots(voteDoc) : of(undefined)
+        reveal
+          ? docSnapshots(voteDoc).pipe(map((snapshot) => snapshot?.data()))
+          : of(undefined)
       ),
-      map((snapshot) => snapshot?.data()),
       map((roomVoteData) => {
         if (roomVoteData !== undefined) {
           const { for: _for, ...omitFor } = roomVoteData;
@@ -177,6 +183,13 @@ export class AppComponent implements OnInit {
         }
         return null;
       }),
+      retryWhen((err) =>
+        // last resort to prevent local data reveal, should never happen
+        err.pipe(
+          delay(1),
+          tap(() => console.warn("retry"))
+        )
+      ),
       share({
         connector: () => new ReplaySubject(1),
         resetOnComplete: true,
