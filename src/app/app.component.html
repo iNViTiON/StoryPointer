@@ -49,8 +49,7 @@
           mat-flat-button
           [color]="(userData$ | push)?.vote === point ? 'accent' : 'primary'"
           (click)="vote(point)"
-          [matBadge]="(roomVoteResult$ | push)?.votes?.[point]"
-          [matBadgeHidden]="!(roomVoteResult$ | push)?.votes?.[point]"
+          [matBadge]="(roomVoteResult$ | push)?.votes?.[point] || undefined"
           matBadgeColor="warn"
         >
           {{ point }}
