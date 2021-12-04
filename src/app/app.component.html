@@ -54,5 +54,13 @@
         </button>
       </div>
     </div>
+    <button
+      *ngIf="(roomData$ | push)?.createdBy === (userId$ | push)"
+      mat-flat-button
+      color="warn"
+      (click)="reset()"
+    >
+      Reset
+    </button>
   </ng-template>
 </ng-container>

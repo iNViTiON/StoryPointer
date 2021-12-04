@@ -11,6 +11,10 @@ service cloud.firestore {
         && request.resource.data.createdBy == request.auth.uid
         && request.resource.data.members.size() == 1
         && request.auth.uid in request.resource.data.members;
+      // reset
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(["voteCount"])
+        && !("voteCount" in request.resource.data)
+        && !existsAfter(/databases/$(database)/documents/rooms/$(roomId)/vote/vote);
       // member join
       allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(["members"])
         && request.resource.data.members.toSet().difference(resource.data.members.toSet()).hasOnly([request.auth.uid])
@@ -71,8 +75,8 @@ service cloud.firestore {
           let validUpVote = request.resource.data.votes[string(voteFor)] == 1
             && get(userDocPath).data.get("vote", null) == null
             && getAfter(userDocPath).data.get("vote", null) == voteFor;
-          return debug(voteFor is string)
-            && debug(request.resource.data).votes.size() == 1
+          return voteFor is string
+            && request.resource.data.votes.size() == 1
             && validUpVote;
         }
         function seeResult() {
@@ -82,6 +86,8 @@ service cloud.firestore {
         allow read: if seeResult();
         allow create, update: if request.auth.uid in get(/databases/$(database)/documents/rooms/$(roomId)).data.members
           && voteValidate();
+        // reset
+        allow delete: if !("voteCount" in getAfter(/databases/$(database)/documents/rooms/$(roomId)).data);
       }
     }
     match /users/{userId} {
@@ -141,6 +147,11 @@ service cloud.firestore {
         && request.auth.uid in getAfter(/databases/$(database)/documents/rooms/$(request.resource.data.forRoom)).data.members;
       allow update: if justVote() && validUpVote(resource.data.forRoom);
       allow update: if justVote() && validCancelVote(resource.data.forRoom);
+      // reset room
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(["vote"])
+        && !("vote" in request.resource.data)
+        && !existsAfter(/databases/$(database)/documents/rooms/$(resource.data.forRoom)/vote/vote)
+        && request.auth.uid == get(/databases/$(database)/documents/rooms/$(resource.data.forRoom)).data.createdBy;
     }
   }
 }

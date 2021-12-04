@@ -65,11 +65,12 @@ export class AppComponent implements OnInit {
   public roomVoteCount$: Observable<number>;
   public roomVoteResult$: Observable<null | Omit<RoomVoteData, `for`>>;
   public userData$: Observable<UserData>;
+  public userId$: Observable<string>;
 
   private roomCollection: CollectionReference<RoomData>;
   private userCollection: CollectionReference<UserData>;
 
-  public points = ["0.5", "1", "2", "3", "5", "8", "13"];
+  public points = ["½", "1", "2", "3", "5", "8", "13"];
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -98,6 +99,7 @@ export class AppComponent implements OnInit {
         resetOnRefCountZero: true,
       })
     );
+    this.userId$ = user(this.fireAuth).pipe(map((user) => user?.uid ?? ""));
     this.userData$ = user(this.fireAuth).pipe(
       filter((user): user is User => user !== null),
       switchMap((user) =>
@@ -137,13 +139,7 @@ export class AppComponent implements OnInit {
       }),
       switchMap(([roomId]) =>
         docSnapshots(doc<RoomData>(this.roomCollection, roomId))
-      ),
-      share({
-        connector: () => new ReplaySubject(1),
-        resetOnComplete: true,
-        resetOnError: true,
-        resetOnRefCountZero: true,
-      })
+      )
     );
     this.roomData$ = roomRaw$.pipe(
       map((snapshot) => snapshot.data()),
@@ -279,6 +275,27 @@ export class AppComponent implements OnInit {
             return createBatch.commit();
           })
           .then(() => (isVote ? undefined : this.vote(n)));
+      });
+  }
+
+  public reset(): void {
+    combineLatest([this.roomId$, this.roomData$])
+      .pipe(first())
+      .subscribe(([roomId, roomData]) => {
+        const batch = writeBatch(this.firestore);
+        const voteCollection = collection(
+          this.firestore,
+          `/rooms/${roomId}/vote`
+        ) as CollectionReference<RoomVoteData>;
+        const roomDoc = doc<RoomData>(this.roomCollection, roomId);
+        const voteDoc = doc<RoomVoteData>(voteCollection, `vote`);
+        batch.update(roomDoc, `voteCount`, deleteField());
+        batch.delete(voteDoc);
+        for (const member of roomData.members) {
+          const userDoc = doc<UserData>(this.userCollection, member);
+          batch.update(userDoc, `vote`, deleteField());
+        }
+        batch.commit();
       });
   }
 }
