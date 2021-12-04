@@ -47,8 +47,11 @@
         <button
           *ngFor="let point of points"
           mat-flat-button
-          color="primary"
+          [color]="(userData$ | push)?.vote === point ? 'accent' : 'primary'"
           (click)="vote(point)"
+          [matBadge]="(roomVoteResult$ | push)?.votes?.[point]"
+          [matBadgeHidden]="!(roomVoteResult$ | push)?.votes?.[point]"
+          matBadgeColor="warn"
         >
           {{ point }}
         </button>
