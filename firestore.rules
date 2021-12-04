@@ -58,7 +58,7 @@ service cloud.firestore {
             && get(userDocPath).data.get("vote", null) == voteFor
             && getAfter(userDocPath).data.get("vote", null) == null
             && roomVoteChange(roomPath) == -1;
-          return voteFor is number
+          return voteFor is string
             && voteForStrSet.hasOnly(voteNum) && voteNum.hasOnly(voteForStrSet)
             && voteNum.size() == 1
             && (validUpVote || validCancelVote);
@@ -71,8 +71,8 @@ service cloud.firestore {
           let validUpVote = request.resource.data.votes[string(voteFor)] == 1
             && get(userDocPath).data.get("vote", null) == null
             && getAfter(userDocPath).data.get("vote", null) == voteFor;
-          return voteFor is number
-            && request.resource.data.votes.size() == 1
+          return debug(voteFor is string)
+            && debug(request.resource.data).votes.size() == 1
             && validUpVote;
         }
         function seeResult() {
@@ -106,7 +106,7 @@ service cloud.firestore {
       function validUpVoteStep2(roomId) {
         let voteFor = request.resource.data.vote;
         let vote = afterVote(roomId);
-        return voteFor is number
+        return voteFor is string
           && resource.data.get("vote", null) == null
           && vote.votes.size() == 1
           && vote.get(["votes", string(voteFor)], 0) == 1;
@@ -116,7 +116,7 @@ service cloud.firestore {
         let voteFor = request.resource.data.vote;
         let oldAccumulateVote = beforeVote(roomId).get(["votes", string(voteFor)], 0);
         let newAccumulateVote = afterVote(roomId).get(["votes", string(voteFor)], 0);
-        return voteFor is number
+        return voteFor is string
           && affectedVote(roomId).size() == 1
           && resource.data.get("vote", null) == null
           && newAccumulateVote == oldAccumulateVote + 1;
@@ -129,7 +129,7 @@ service cloud.firestore {
         let voteFor = resource.data.vote;
         let oldAccumulateVote = beforeVote(roomId).get(["votes", string(voteFor)], 0);
         let newAccumulateVote = afterVote(roomId).get(["votes", string(voteFor)], 0);
-        return voteFor is number
+        return voteFor is string
           && request.resource.data.get("vote", null) == null
           && newAccumulateVote == oldAccumulateVote - 1;
       }

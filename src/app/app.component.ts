@@ -69,7 +69,7 @@ export class AppComponent implements OnInit {
   private roomCollection: CollectionReference<RoomData>;
   private userCollection: CollectionReference<UserData>;
 
-  public points = [0.5, 1, 2, 3, 5, 8, 13];
+  public points = ["0.5", "1", "2", "3", "5", "8", "13"];
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -243,7 +243,7 @@ export class AppComponent implements OnInit {
       });
   }
 
-  public vote(n: number): void {
+  public vote(n: string): void {
     combineLatest([
       this.roomId$,
       user(this.fireAuth).pipe(filter((user): user is User => user !== null)),
@@ -286,7 +286,7 @@ export class AppComponent implements OnInit {
 interface UserData {
   createdAt: Timestamp;
   forRoom?: string;
-  vote?: number;
+  vote?: string;
 }
 
 interface RoomData {
@@ -297,6 +297,6 @@ interface RoomData {
 }
 
 interface RoomVoteData {
-  for: number;
-  votes: { [key: number]: number };
+  for: string;
+  votes: { [key: string]: number };
 }
