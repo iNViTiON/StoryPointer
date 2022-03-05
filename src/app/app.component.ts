@@ -6,7 +6,7 @@ import {
   signInAnonymously,
   user,
 } from "@angular/fire/auth";
-import { Database, objectVal, ref } from "@angular/fire/database";
+import { Database, objectVal, onDisconnect, ref } from "@angular/fire/database";
 import type { CollectionReference, Timestamp } from "@angular/fire/firestore";
 import {
   addDoc,
@@ -22,8 +22,8 @@ import {
 } from "@angular/fire/firestore";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
+import { set } from "firebase/database";
 import {
-  catchError,
   combineLatest,
   delay,
   delayWhen,
@@ -41,6 +41,7 @@ import {
   startWith,
   Subject,
   switchMap,
+  switchMapTo,
   tap,
   withLatestFrom,
 } from "rxjs";
@@ -100,6 +101,17 @@ export class AppComponent implements OnInit {
       })
     );
     this.userId$ = user(this.fireAuth).pipe(map((user) => user?.uid ?? ""));
+    this.isRtdbOnline$
+      .pipe(
+        filter((isOnline) => isOnline),
+        switchMapTo(this.userId$),
+        map((userId) => ref(this.rtdb, `presence/users/${userId}`))
+      )
+      .subscribe((ref) =>
+        onDisconnect(ref)
+          .remove()
+          .then(() => set(ref, true))
+      );
     this.userData$ = user(this.fireAuth).pipe(
       filter((user): user is User => user !== null),
       switchMap((user) =>
@@ -119,27 +131,72 @@ export class AppComponent implements OnInit {
         (fragment): fragment is string => fragment !== null && fragment !== ""
       )
     );
+    user(this.fireAuth)
+      .pipe(
+        filter((user): user is User => user !== null),
+        switchMap((user) =>
+          this.roomId$.pipe(
+            switchMap((roomId) => {
+              const batch = writeBatch(this.firestore);
+              batch.update(doc<RoomData>(this.roomCollection, roomId), {
+                members: arrayUnion(user.uid),
+              });
+              batch.update(
+                doc<UserData>(this.userCollection, user.uid),
+                `forRoom`,
+                roomId
+              );
+              return from(batch.commit());
+            })
+          )
+        ),
+        retryWhen((err$) => err$.pipe(delay(100))),
+        first()
+      )
+      .subscribe();
+    user(this.fireAuth)
+      .pipe(
+        filter((user): user is User => user !== null),
+        switchMap((user) =>
+          this.roomId$.pipe(
+            switchMap((roomId) =>
+              docSnapshots(doc<RoomData>(this.roomCollection, roomId)).pipe(
+                retryWhen((err$) =>
+                  err$.pipe(
+                    delayWhen(() => {
+                      const batch = writeBatch(this.firestore);
+                      batch.update(doc<RoomData>(this.roomCollection, roomId), {
+                        members: arrayUnion(user.uid),
+                      });
+                      batch.update(
+                        doc<UserData>(this.userCollection, user.uid),
+                        `forRoom`,
+                        roomId
+                      );
+                      return from(batch.commit());
+                    })
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+      .subscribe();
     const roomRaw$ = combineLatest([
       this.roomId$,
       user(this.fireAuth).pipe(filter((user): user is User => user !== null)),
     ]).pipe(
-      delayWhen(([roomId, user]) => {
-        const batch = writeBatch(this.firestore);
-        batch.update(doc<RoomData>(this.roomCollection, roomId), {
-          members: arrayUnion(user.uid),
-        });
-        batch.update(
-          doc<UserData>(this.userCollection, user.uid),
-          `forRoom`,
-          roomId
-        );
-        return from(batch.commit().catch()).pipe(
-          catchError(() => of(undefined))
-        );
-      }),
       switchMap(([roomId]) =>
         docSnapshots(doc<RoomData>(this.roomCollection, roomId))
-      )
+      ),
+      retryWhen((err) => err.pipe(delay(1000))),
+      share({
+        connector: () => new ReplaySubject(1),
+        resetOnComplete: true,
+        resetOnError: true,
+        resetOnRefCountZero: true,
+      })
     );
     this.roomData$ = roomRaw$.pipe(
       map((snapshot) => snapshot.data()),
@@ -182,7 +239,7 @@ export class AppComponent implements OnInit {
       retryWhen((err) =>
         // last resort to prevent local data reveal, should never happen
         err.pipe(
-          delay(1),
+          delay(1000),
           tap(() => console.warn("retry"))
         )
       ),
