@@ -12,6 +12,13 @@
         },
         ".write": "auth !== null"
       }
+    },
+    "presence": {
+      "users": {
+        "$uid": {
+          ".write": "$uid === auth.uid"
+        }
+      }
     }
   }
 }
