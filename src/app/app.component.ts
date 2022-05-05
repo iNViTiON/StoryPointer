@@ -58,6 +58,8 @@ export class AppComponent implements OnInit {
     switchMap(() => merge(of(false), of(true).pipe(delay(1))))
   );
 
+  public debug$: Observable<boolean>;
+
   public isRtdbOnline$: Observable<boolean>;
 
   public roomId$: Observable<string>;
@@ -81,6 +83,10 @@ export class AppComponent implements OnInit {
     private router: Router,
     private titleService: Title
   ) {
+    this.debug$ = thithis.activatedRoute.queryParamMap.pipe(
+      map((params) => params.get("debug")),
+      map((debug) => debug === "true")
+    );
     this.fireAuth.setPersistence(browserSessionPersistence);
     this.roomCollection = collection(
       this.firestore,

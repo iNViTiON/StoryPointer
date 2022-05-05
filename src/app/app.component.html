@@ -1,9 +1,11 @@
 <ng-container *ngIf="mainSwitch$ | push">
-  {{ roomId$ | push | json }} - {{ roomExist$ | push | json }} - online:
-  {{ isRtdbOnline$ | push | json }}
-  <br />
-  {{ userData$ | push | json }}
-  <br />
+  <ng-container *ngIf="debug$ | push">
+    {{ roomId$ | push | json }} - {{ roomExist$ | push | json }} - online:
+    {{ isRtdbOnline$ | push | json }}
+    <br />
+    {{ userData$ | push | json }}
+    <br />
+  </ng-container>
   <ng-container *rxLet="roomId$ as roomId; rxSuspense: noRoom">
     <ng-container *rxLet="roomExist$ as roomExist; rxSuspense: loadingRoom">
       <ng-container
@@ -38,11 +40,13 @@
       {{ roomVoteCount$ | push | json }} /
       {{ (roomData$ | push)?.members?.length }} vote(s)
       <br />
-      <ng-container *ngIf="roomVoteResult$ | push as result">
-        {{ result | json }}
+      <ng-container *ngIf="debug$ | push">
+        <ng-container *ngIf="roomVoteResult$ | push as result">
+          {{ result | json }}
+        </ng-container>
+        <br />
+        {{ roomData$ | push | json }}
       </ng-container>
-      <br />
-      {{ roomData$ | push | json }}
       <div class="vote-container">
         <button
           *ngFor="let point of points"
