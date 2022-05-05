@@ -83,7 +83,7 @@ export class AppComponent implements OnInit {
     private router: Router,
     private titleService: Title
   ) {
-    this.debug$ = thithis.activatedRoute.queryParamMap.pipe(
+    this.debug$ = this.activatedRoute.queryParamMap.pipe(
       map((params) => params.get("debug")),
       map((debug) => debug === "true")
     );
