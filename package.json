@@ -28,19 +28,19 @@
     "functions"
   ],
   "dependencies": {
-    "@angular/animations": "~13.0.0",
-    "@angular/cdk": "13.0.2",
-    "@angular/common": "~13.0.0",
-    "@angular/compiler": "~13.0.0",
-    "@angular/core": "~13.0.0",
-    "@angular/fire": "7.2.0",
-    "@angular/forms": "~13.0.0",
-    "@angular/material": "13.0.2",
-    "@angular/platform-browser": "~13.0.0",
-    "@angular/platform-browser-dynamic": "~13.0.0",
-    "@angular/router": "~13.0.0",
-    "@rx-angular/cdk": "latest",
-    "@rx-angular/template": "1.0.0-beta.29",
+    "@angular/animations": "~14.2.0",
+    "@angular/cdk": "14.2.0",
+    "@angular/common": "~14.2.0",
+    "@angular/compiler": "~14.2.0",
+    "@angular/core": "~14.2.0",
+    "@angular/fire": "7.4.1",
+    "@angular/forms": "~14.2.0",
+    "@angular/material": "14.2.0",
+    "@angular/platform-browser": "~14.2.0",
+    "@angular/platform-browser-dynamic": "~14.2.0",
+    "@angular/router": "~14.2.0",
+    "@rx-angular/cdk": "1.0.0-beta.3",
+    "@rx-angular/template": "1.0.0-beta.33",
     "firebase": "^9.4.0",
     "rxfire": "^6.0.0",
     "rxjs": "~7.4.0",
@@ -48,11 +48,11 @@
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~13.0.3",
-    "@angular/cli": "~13.0.3",
-    "@angular/compiler-cli": "~13.0.0",
+    "@angular-devkit/build-angular": "~14.2.1",
+    "@angular/cli": "~14.2.1",
+    "@angular/compiler-cli": "~14.2.0",
     "@types/node": "^12.11.1",
-    "typescript": "~4.4.3"
+    "typescript": "~4.8.2"
   },
   "packageManager": "yarn@3.2.3"
 }
