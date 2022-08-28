@@ -32,7 +32,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular-devkit/build-angular@npm:~14.2.1":
+"@angular-devkit/build-angular@npm:^14.2.1":
   version: 14.2.1
   resolution: "@angular-devkit/build-angular@npm:14.2.1"
   dependencies:
@@ -172,7 +172,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/animations@npm:~14.2.0":
+"@angular/animations@npm:^14.2.0":
   version: 14.2.0
   resolution: "@angular/animations@npm:14.2.0"
   dependencies:
@@ -200,7 +200,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/cli@npm:~14.2.1":
+"@angular/cli@npm:^14.2.1":
   version: 14.2.1
   resolution: "@angular/cli@npm:14.2.1"
   dependencies:
@@ -230,7 +230,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/common@npm:~14.2.0":
+"@angular/common@npm:^14.2.0":
   version: 14.2.0
   resolution: "@angular/common@npm:14.2.0"
   dependencies:
@@ -242,7 +242,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/compiler-cli@npm:~14.2.0":
+"@angular/compiler-cli@npm:^14.2.0":
   version: 14.2.0
   resolution: "@angular/compiler-cli@npm:14.2.0"
   dependencies:
@@ -267,7 +267,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/compiler@npm:~14.2.0":
+"@angular/compiler@npm:^14.2.0":
   version: 14.2.0
   resolution: "@angular/compiler@npm:14.2.0"
   dependencies:
@@ -281,7 +281,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/core@npm:~14.2.0":
+"@angular/core@npm:^14.2.0":
   version: 14.2.0
   resolution: "@angular/core@npm:14.2.0"
   dependencies:
@@ -328,7 +328,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/forms@npm:~14.2.0":
+"@angular/forms@npm:^14.2.0":
   version: 14.2.0
   resolution: "@angular/forms@npm:14.2.0"
   dependencies:
@@ -359,7 +359,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/platform-browser-dynamic@npm:~14.2.0":
+"@angular/platform-browser-dynamic@npm:^14.2.0":
   version: 14.2.0
   resolution: "@angular/platform-browser-dynamic@npm:14.2.0"
   dependencies:
@@ -373,7 +373,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/platform-browser@npm:~14.2.0":
+"@angular/platform-browser@npm:^14.2.0":
   version: 14.2.0
   resolution: "@angular/platform-browser@npm:14.2.0"
   dependencies:
@@ -389,7 +389,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/router@npm:~14.2.0":
+"@angular/router@npm:^14.2.0":
   version: 14.2.0
   resolution: "@angular/router@npm:14.2.0"
   dependencies:
@@ -11725,20 +11725,20 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "story-pointer@workspace:."
   dependencies:
-    "@angular-devkit/build-angular": ~14.2.1
-    "@angular/animations": ~14.2.0
+    "@angular-devkit/build-angular": ^14.2.1
+    "@angular/animations": ^14.2.0
     "@angular/cdk": 14.2.0
-    "@angular/cli": ~14.2.1
-    "@angular/common": ~14.2.0
-    "@angular/compiler": ~14.2.0
-    "@angular/compiler-cli": ~14.2.0
-    "@angular/core": ~14.2.0
+    "@angular/cli": ^14.2.1
+    "@angular/common": ^14.2.0
+    "@angular/compiler": ^14.2.0
+    "@angular/compiler-cli": ^14.2.0
+    "@angular/core": ^14.2.0
     "@angular/fire": 7.4.1
-    "@angular/forms": ~14.2.0
+    "@angular/forms": ^14.2.0
     "@angular/material": 14.2.0
-    "@angular/platform-browser": ~14.2.0
-    "@angular/platform-browser-dynamic": ~14.2.0
-    "@angular/router": ~14.2.0
+    "@angular/platform-browser": ^14.2.0
+    "@angular/platform-browser-dynamic": ^14.2.0
+    "@angular/router": ^14.2.0
     "@rx-angular/cdk": 1.0.0-beta.3
     "@rx-angular/template": 1.0.0-beta.33
     "@types/node": ^12.11.1
