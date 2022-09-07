@@ -3279,31 +3279,32 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rx-angular/cdk@npm:1.0.0-beta.3":
-  version: 1.0.0-beta.3
-  resolution: "@rx-angular/cdk@npm:1.0.0-beta.3"
+"@rx-angular/cdk@npm:1.0.0-rc.1":
+  version: 1.0.0-rc.1
+  resolution: "@rx-angular/cdk@npm:1.0.0-rc.1"
   dependencies:
     ng-morph: ^2.0.0
     tslib: ^2.0.0
   peerDependencies:
     "@angular/core": ">=12.0.0"
     rxjs: ">=6.5.5"
-  checksum: 1926f01b1238545a3031f80417419977d67e4835bd4a2589a292a60618445b199b58c061cf5a86e4f968702b36d38ed3e5011ed29ea5be07a1f9ee8becfbaa3e
+  checksum: d77f0aafab3fb4bd51ac2e07d34449e44ab2f6cf50e5018d4c087d3b777e612dd074757e4fe2432f57494d812b3a1f2d0a1d6275e0799054be25930d2936eb67
   languageName: node
   linkType: hard
 
-"@rx-angular/template@npm:1.0.0-beta.33":
-  version: 1.0.0-beta.33
-  resolution: "@rx-angular/template@npm:1.0.0-beta.33"
+"@rx-angular/template@npm:1.0.0-rc.1":
+  version: 1.0.0-rc.1
+  resolution: "@rx-angular/template@npm:1.0.0-rc.1"
   dependencies:
     ng-morph: ^2.0.0
     tslib: ^2.0.0
   peerDependencies:
+    "@angular/common": 12.2.16
     "@angular/core": ">=12.0.0"
     "@angular/platform-browser": ">=12.0.0"
     "@rx-angular/cdk": ">=1.0.0-beta.2"
     rxjs: ">=6.5.5"
-  checksum: 1f18b226c335baa4573c5683976e99afe64f6592afbcb6a17339d28bf9c56bffc18de6bc3f456705fabfa11a750242219e2f91291ddf8fd7999be9bd1747df40
+  checksum: e3fb12a3b94d24a5f925b4e7a16f4d339121367726a71699139be39298df6ea9e6a0abc6246b3655886b257f4b09c6e93e013f622f844800270f8b379f3ee323
   languageName: node
   linkType: hard
 
@@ -11317,8 +11318,8 @@ __metadata:
     "@angular/platform-browser": ^14.2.1
     "@angular/platform-browser-dynamic": ^14.2.1
     "@angular/router": ^14.2.1
-    "@rx-angular/cdk": 1.0.0-beta.3
-    "@rx-angular/template": 1.0.0-beta.33
+    "@rx-angular/cdk": 1.0.0-rc.1
+    "@rx-angular/template": 1.0.0-rc.1
     "@types/node": ^16.11.56
     firebase: ^9.9.3
     rxfire: ^6.0.0
