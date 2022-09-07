@@ -16,11 +16,7 @@ import { MatButtonModule } from "@angular/material/button";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { RouterModule } from "@angular/router";
-import {
-  LetModule,
-  PushModule,
-  ViewportPrioModule,
-} from "@rx-angular/template";
+import { ForModule, LetModule, PushModule } from "@rx-angular/template";
 import { environment } from "../environments/environment";
 import { AppComponent } from "./app.component";
 
@@ -29,12 +25,12 @@ import { AppComponent } from "./app.component";
   imports: [
     BrowserAnimationsModule,
     BrowserModule,
+    ForModule,
     LetModule,
     MatBadgeModule,
     MatButtonModule,
     PushModule,
     RouterModule.forRoot([]),
-    ViewportPrioModule,
     provideAuth(() => {
       const auth = getAuth();
       if (environment.useEmulators) {

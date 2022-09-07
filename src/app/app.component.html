@@ -6,8 +6,8 @@
     {{ userData$ | push | json }}
     <br />
   </ng-container>
-  <ng-container *rxLet="roomId$ as roomId; rxSuspense: noRoom">
-    <ng-container *rxLet="roomExist$ as roomExist; rxSuspense: loadingRoom">
+  <ng-container *rxLet="roomId$ as roomId; suspense: noRoom">
+    <ng-container *rxLet="roomExist$ as roomExist; suspense: loadingRoom">
       <ng-container
         *ngIf="roomExist === false; then roomNotFound; else working"
       ></ng-container>
@@ -37,7 +37,7 @@
 
   <ng-template #working>
     <div class="full center">
-      {{ roomVoteCount$ | push | json }} /
+      {{ roomVoteCount$ | push }} /
       {{ (roomData$ | push)?.members?.length }} vote(s)
       <br />
       <ng-container *ngIf="debug$ | push">
@@ -47,14 +47,14 @@
         <br />
         {{ roomData$ | push | json }}
       </ng-container>
-      <div class="vote-container">
+      <div class="vote-container" *rxLet="voteData$ as voteData">
         <button
-          *ngFor="let point of points"
+          *rxFor="let point of points"
           mat-flat-button
-          [color]="(userData$ | push)?.vote === point ? 'accent' : 'primary'"
-          (click)="vote(point)"
-          [matBadge]="(roomVoteResult$ | push)?.votes?.[point] || undefined"
           matBadgeColor="warn"
+          [color]="voteData.vote === point ? 'accent' : 'primary'"
+          [matBadge]="voteData.votes?.[point] || undefined"
+          (click)="vote(point)"
         >
           {{ point }}
         </button>
