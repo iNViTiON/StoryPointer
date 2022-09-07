@@ -34,6 +34,7 @@ import {
   merge,
   Observable,
   of,
+  pluck,
   ReplaySubject,
   retryWhen,
   share,
@@ -66,9 +67,13 @@ export class AppComponent implements OnInit {
   public roomData$: Observable<RoomData>;
   public roomExist$: Observable<boolean>;
   public roomVoteCount$: Observable<number>;
-  public roomVoteResult$: Observable<null | Omit<RoomVoteData, `for`>>;
+  public roomVoteResult$: Observable<null | RoomVoteData["votes"]>;
   public userData$: Observable<UserData>;
   public userId$: Observable<string>;
+  public voteData$: Observable<{
+    vote: undefined | string;
+    votes: null | RoomVoteData["votes"];
+  }>;
 
   private roomCollection: CollectionReference<RoomData>;
   private userCollection: CollectionReference<UserData>;
@@ -235,25 +240,21 @@ export class AppComponent implements OnInit {
           ? docSnapshots(voteDoc).pipe(map((snapshot) => snapshot?.data()))
           : of(undefined)
       ),
-      map((roomVoteData) => {
-        if (roomVoteData !== undefined) {
-          const { for: _for, ...omitFor } = roomVoteData;
-          return omitFor;
-        }
-        return null;
-      }),
+      map((roomVoteData) => roomVoteData?.votes ?? null),
       retryWhen((err) =>
-        // last resort to prevent local data reveal, should never happen
         err.pipe(
-          delay(1000),
+          delay(30),
           tap(() => console.warn("retry"))
         )
-      ),
-      share({
-        connector: () => new ReplaySubject(1),
-        resetOnComplete: true,
-        resetOnError: true,
-        resetOnRefCountZero: true,
+      )
+    );
+    this.voteData$ = combineLatest({
+      vote: this.userData$.pipe(pluck("vote")),
+      votes: this.roomVoteResult$,
+    }).pipe(
+      startWith({
+        vote: undefined,
+        votes: null,
       })
     );
 
