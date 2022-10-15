@@ -41,7 +41,6 @@
     "@angular/router": "^14.2.6",
     "@rx-angular/cdk": "1.0.0-rc.2",
     "@rx-angular/template": "1.0.0-rc.3",
-    "firebase": "^9.12.1",
     "rxfire": "^6.0.0",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",
