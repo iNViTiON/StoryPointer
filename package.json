@@ -18,6 +18,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "test-e2e": "playwright test",
     "watch": "ng build --watch --configuration development",
     "dbrules": "firebase deploy --only database",
     "fsrules": "firebase deploy --only firestore",
@@ -50,6 +51,7 @@
     "@angular-devkit/build-angular": "^14.2.6",
     "@angular/cli": "^14.2.6",
     "@angular/compiler-cli": "^14.2.6",
+    "@playwright/test": "^1.26.0",
     "@types/node": "^16.11.56",
     "typescript": "~4.8.2"
   },

@@ -191,7 +191,8 @@ export class AppComponent implements OnInit {
               )
             )
           )
-        )
+        ),
+        retryWhen((err$) => err$.pipe(delay(100)))
       )
       .subscribe();
     const roomRaw$ = combineLatest([
@@ -288,6 +289,9 @@ export class AppComponent implements OnInit {
           (fragment): fragment is "" | null =>
             fragment === null || fragment === ""
         ),
+        switchMap(() => user(this.fireAuth)),
+        filter((user) => user !== null),
+        first(),
         switchMap(() =>
           addDoc(collection(this.firestore, "rooms"), {
             createdAt: serverTimestamp(),
@@ -296,7 +300,8 @@ export class AppComponent implements OnInit {
           })
         ),
         map((ref) => ref.id),
-        filter((roomId): roomId is string => roomId !== null)
+        filter((roomId): roomId is string => roomId !== null),
+        retryWhen((err$) => err$.pipe(delay(100)))
       )
       .subscribe((roomId) => {
         this.router.navigate(["/"], { fragment: roomId });

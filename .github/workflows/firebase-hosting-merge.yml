@@ -9,15 +9,22 @@ name: Deploy to Firebase Hosting on merge
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: Preview
+      url: ${{ steps.deploy.outputs.details_url }}
     steps:
       - uses: actions/checkout@v3
+      - run: corepack enable
+      # - uses: actions/setup-node@v3
+      #   with:
+      #     node-version: "16"
+      #     cache: "npm"
       - uses: actions/setup-node@v3
         with:
           node-version: "16"
           cache: "yarn"
-      - run: corepack enable
       - run: yarn
-      - run: npm install -g firebase-tools
+      # - run: npm install -g firebase-tools
       - run: yarn build
       # FIXME: need firebase token
       # - run: yarn dbrules
