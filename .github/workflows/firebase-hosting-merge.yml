@@ -11,11 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "npm"
       - uses: actions/setup-node@v3
         with:
           node-version: "16"
           cache: "yarn"
-      - run: corepack enable
       - run: yarn
       - run: npm install -g firebase-tools
       - run: yarn build
