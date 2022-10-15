@@ -1,4 +1,5 @@
 import * as admin from "firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 import type { RuntimeOptions } from "firebase-functions";
 import * as functions from "firebase-functions";
 
@@ -17,7 +18,7 @@ export const logUserCreatedAt = functions
     );
     return admin.firestore().doc(`users/${user.uid}`).set(
       {
-        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        createdAt: FieldValue.serverTimestamp(),
       },
       { merge: true }
     );
@@ -50,9 +51,7 @@ export const removeOfflineUser = functions
         return Promise.all(
           rooms.map((room) =>
             room.ref.update({
-              members: admin.firestore.FieldValue.arrayRemove(
-                context.params.uid
-              ),
+              members: FieldValue.arrayRemove(context.params.uid),
             })
           )
         );
