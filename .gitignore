@@ -58,3 +58,6 @@ Thumbs.db
 .firebase
 *-debug.log
 .runtimeconfig.json
+/test-results/
+/playwright-report/
+/playwright/.cache/
