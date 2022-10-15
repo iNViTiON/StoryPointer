@@ -288,6 +288,9 @@ export class AppComponent implements OnInit {
           (fragment): fragment is "" | null =>
             fragment === null || fragment === ""
         ),
+        switchMap(() => user(this.fireAuth)),
+        filter((user) => user !== null),
+        first(),
         switchMap(() =>
           addDoc(collection(this.firestore, "rooms"), {
             createdAt: serverTimestamp(),

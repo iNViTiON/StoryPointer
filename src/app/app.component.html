@@ -1,5 +1,7 @@
 <ng-container *ngIf="mainSwitch$ | push">
+  <span *ngIf="!(isRtdbOnline$ | push)">Connecting…</span>
   <ng-container *ngIf="debug$ | push">
+    <br />
     {{ roomId$ | push | json }} - {{ roomExist$ | push | json }} - online:
     {{ isRtdbOnline$ | push | json }}
     <br />
