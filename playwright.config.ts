@@ -10,6 +10,7 @@ import { devices } from "@playwright/test";
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+const isCi = !!process.env["CI"];
 const config: PlaywrightTestConfig = {
   testDir: "./e2e",
   /* Maximum time one test can run for. */
@@ -24,11 +25,11 @@ const config: PlaywrightTestConfig = {
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env["CI"],
+  forbidOnly: isCi,
   /* Retry on CI only */
-  retries: process.env["CI"] ? 3 : 1,
+  retries: isCi ? 3 : 1,
   /* Opt out of parallel tests on CI. */
-  workers: process.env["CI"] ? 1 : undefined,
+  workers: isCi ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -36,7 +37,7 @@ const config: PlaywrightTestConfig = {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://localhost:3000',
+    baseURL: isCi ? "http://localhost:5000" : "http://localhost:4200",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     // trace: 'on-first-retry',
@@ -100,19 +101,29 @@ const config: PlaywrightTestConfig = {
   // outputDir: 'test-results/',
 
   /* Run your local dev server before starting the tests */
-  webServer: [
-    {
-      command: "yarn ng s",
-      port: 4200,
-      reuseExistingServer: true,
-    },
-    {
-      command: "firebase emulators:start",
-      port: 5000,
-      cwd: "./functions",
-      reuseExistingServer: true,
-    },
-  ],
+  webServer: isCi
+    ? [
+        {
+          // TODO: command: "firebase emulators:start",
+          command: "firebase emulators:start --only hosting",
+          port: 5000,
+          cwd: "./functions",
+          reuseExistingServer: true,
+        },
+      ]
+    : [
+        {
+          command: "yarn ng s",
+          port: 4200,
+          reuseExistingServer: true,
+        },
+        {
+          command: "firebase emulators:start",
+          port: 5000,
+          cwd: "./functions",
+          reuseExistingServer: true,
+        },
+      ],
 };
 
 export default config;

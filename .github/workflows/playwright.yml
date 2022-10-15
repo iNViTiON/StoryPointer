@@ -5,8 +5,25 @@ on:
   pull_request:
     branches: [main]
 jobs:
+  build:
+    name: "Build web"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: corepack enable
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+          cache: "yarn"
+      - run: yarn
+      - uses: actions/cache@v3
+        with:
+          path: dist
+          key: build-${{ github.run_number }}
+      - run: yarn ng b #--configuration=ci TODO: all in local
   test:
-    name: "Playwright Tests - ${{ matrix.project }} - Shard ${{ matrix.shardIndex }} of ${{ matrix.shardTotal }}"
+    name: "Playwright Tests - Shard ${{ matrix.shardIndex }} of ${{ matrix.shardTotal }}"
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -26,6 +43,14 @@ jobs:
           node-version: "16"
           cache: "yarn"
       - run: yarn
+      - uses: actions/cache@v3
+        with:
+          path: dist
+          key: build-${{ github.run_number }}
+      - uses: actions/cache@v3
+        with:
+          path: /home/runner/.cache/ms-playwright
+          key: playwright-install
       - name: Install Playwright Browsers
         run: yarn playwright install --with-deps
       - name: Run Playwright tests
@@ -33,6 +58,55 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: playwright-report-${{ matrix.shardIndex }}-${{ matrix.shardTotal }}
+          name: playwright-report-${{ matrix.shardIndex }}
           path: playwright-report/
           retention-days: 30
+  publish:
+    name: Publish Playwright merged report
+    if: always()
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      # name: ${{ inputs.environment }}-report
+      # url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+      - uses: actions/download-artifact@v3
+        with:
+          path: ./playwright-report
+      - run: rm package.json yarn.lock .yarnrc.yml
+      - run: npm init -y -f
+      - run: yarn set version stable
+      - run: yarn add playwright-merge-html-reports
+      - name: Merge Reports
+        run: yarn node merge-reports.js
+      # - name: Upload Pages Artifact
+      #   uses: actions/upload-pages-artifact@v1
+      #   with:
+      #     path: "./html-report"
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report-merged
+          path: html-report/
+          retention-days: 30
+      # - name: Setup Pages
+      #   uses: actions/configure-pages@v1
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     name: "github-pages"
+      # - name: Deploy to GitHub Pages
+      #   id: pages-deploy
+      #   uses: actions/deploy-pages@v1
+      # - name: Message PR of Artifact Published
+      #   if: ${{ always() && github.event_name == 'pull_request' }}
+      #   uses: thollander/actions-comment-pull-request@main
+      #   with:
+      #     message: |
+      #       See Playwright Test Report at ${{steps.pages-deploy.outputs.page_url}}
+      #     comment_includes: "See Playwright Test Report "
+      #     pr_number: ${{ inputs.pr_number }}
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
