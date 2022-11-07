@@ -3500,10 +3500,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^16.11.56":
-  version: 16.11.56
-  resolution: "@types/node@npm:16.11.56"
-  checksum: b4efade16eb08a39810921c54a1637e69c8f3184a20d87e8fe74d557d9bda73f0829ac318e2a30a32b1903e4b099812defd1dfe438be70b98dbfbea5b0d99a53
+"@types/node@npm:^18.11.9":
+  version: 18.11.9
+  resolution: "@types/node@npm:18.11.9"
+  checksum: cc0aae109e9b7adefc32eecb838d6fad931663bb06484b5e9cbbbf74865c721b03d16fd8d74ad90e31dbe093d956a7c2c306ba5429ba0c00f3f7505103d7a496
   languageName: node
   linkType: hard
 
@@ -11393,7 +11393,7 @@ __metadata:
     "@playwright/test": ^1.26.0
     "@rx-angular/cdk": 1.0.0-rc.2
     "@rx-angular/template": 1.0.0-rc.3
-    "@types/node": ^16.11.56
+    "@types/node": ^18.11.9
     rxfire: ^6.0.0
     rxjs: ~7.4.0
     tslib: ^2.3.0
