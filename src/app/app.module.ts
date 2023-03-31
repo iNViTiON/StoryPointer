@@ -1,24 +1,24 @@
-import { PushModule } from "@rx-angular/template/push";
-import { LetModule } from "@rx-angular/template/let";
 import { NgModule } from "@angular/core";
 import { initializeApp, provideFirebaseApp } from "@angular/fire/app";
 import { connectAuthEmulator, getAuth, provideAuth } from "@angular/fire/auth";
 import {
   connectDatabaseEmulator,
   getDatabase,
-  provideDatabase,
+  provideDatabase
 } from "@angular/fire/database";
 import {
   connectFirestoreEmulator,
   getFirestore,
-  provideFirestore,
+  provideFirestore
 } from "@angular/fire/firestore";
 import { MatBadgeModule } from "@angular/material/badge";
-import { MatLegacyButtonModule as MatButtonModule } from "@angular/material/legacy-button";
+import { MatButtonModule } from "@angular/material/button";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { RouterModule } from "@angular/router";
-import { ForModule } from "@rx-angular/template";
+import { ForModule } from "@rx-angular/template/for";
+import { LetModule } from "@rx-angular/template/let";
+import { PushModule } from "@rx-angular/template/push";
 import { environment } from "../environments/environment";
 import { AppComponent } from "./app.component";
 
@@ -59,4 +59,4 @@ import { AppComponent } from "./app.component";
   providers: [],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }
