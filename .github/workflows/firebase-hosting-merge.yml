@@ -14,15 +14,27 @@ jobs:
       url: ${{ steps.deploy.outputs.details_url }}
     steps:
       - uses: actions/checkout@v3
-      - run: corepack enable
-      # - uses: actions/setup-node@v3
-      #   with:
-      #     node-version: "16"
-      #     cache: "npm"
-      - uses: actions/setup-node@v3
         with:
-          node-version: "16"
-          cache: "yarn"
+          fetch-depth: 1
+      - uses: volta-cli/action@v4
+      - name: Print node/npm/yarn info
+        id: info
+        run: |
+          node_ver=$( node --version )
+          yarn_ver=$( yarn --version )
+          echo "Node: ${node_ver:1}"
+          echo "NPM: $( npm --version )"
+          echo "Yarn: $yarn_ver"
+          echo "node_version=${node_ver:1}" >> $GITHUB_OUTPUT
+          echo "yarn_version=${yarn_ver}" >> $GITHUB_OUTPUT
+          echo "cache_dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+      - name: Use yarn cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.info.outputs.cache_dir }}
+          key: ${{ runner.os }}-node-${{ steps.info.outputs.node_version }}-yarn-${{ steps.info.outputs.yarn_version }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-${{ steps.info.outputs.node_version }}-yarn-${{ steps.info.outputs.yarn_version }}-
       - run: yarn
       # - run: npm install -g firebase-tools
       - run: yarn build
