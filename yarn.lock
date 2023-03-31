@@ -3771,31 +3771,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rx-angular/cdk@npm:1.0.0-rc.2":
-  version: 1.0.0-rc.2
-  resolution: "@rx-angular/cdk@npm:1.0.0-rc.2"
+"@rx-angular/cdk@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@rx-angular/cdk@npm:2.0.0"
   dependencies:
-    ng-morph: ^2.0.0
-    tslib: ^2.0.0
+    ng-morph: ^2.1.3
+    tslib: ^2.4.1
   peerDependencies:
-    "@angular/core": ">=12.0.0"
-    rxjs: ">=6.5.5"
-  checksum: daac1b0bdb228b5c828d7cfcb1dd67831ec1e9de26c871a4e0f5a6941975e1c55488db743626c2c6c3d76b67693d93a3b4c78bbaa357e79c3660ab549ac394bd
+    "@angular/core": ">=13.0.0"
+    rxjs: ^6.5.5 || ^7.4.0
+  checksum: c3c655de8851480cef1d47c98a46064f71a1f5e6b9f0ef0ac19b1ea48d3a20f27def546ede99047ca44a7611e79b66a10afbd21558d442f69db4d8e93e9ef3e1
   languageName: node
   linkType: hard
 
-"@rx-angular/template@npm:1.0.0-rc.3":
-  version: 1.0.0-rc.3
-  resolution: "@rx-angular/template@npm:1.0.0-rc.3"
+"@rx-angular/template@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@rx-angular/template@npm:2.0.0"
   dependencies:
-    ng-morph: ^2.0.0
-    tslib: ^2.0.0
+    ng-morph: ^2.1.3
+    tslib: ^2.4.1
   peerDependencies:
-    "@angular/core": ">=12.0.0"
-    "@angular/platform-browser": ">=12.0.0"
-    "@rx-angular/cdk": ">=1.0.0-beta.2"
-    rxjs: ">=6.5.5"
-  checksum: 4392af920bf270101960fd38f03c29d55c7cb7005c1f7c484de8cd013e7eb9018c1af6813fd001cd763ff47a9676188006649fa3ae5f0bee33670c159c3475c5
+    "@angular/core": ">=13.0.0"
+    "@rx-angular/cdk": ^2.0.0
+    rxjs: ^6.5.5 || ^7.4.0
+  checksum: 70166ea64a8d9092d586d5de954779e5c667cc4ae7b7ec13335007e089cab6766f1a340f05e5f3405824c1bf0f2def27ea1a81b018c6cbcb2c64d268db0a3144
   languageName: node
   linkType: hard
 
@@ -9062,7 +9061,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ng-morph@npm:^2.0.0":
+"ng-morph@npm:^2.1.3":
   version: 2.1.3
   resolution: "ng-morph@npm:2.1.3"
   dependencies:
@@ -10918,8 +10917,8 @@ __metadata:
     "@angular/platform-browser-dynamic": ^15.2.4
     "@angular/router": ^15.2.4
     "@playwright/test": ^1.26.0
-    "@rx-angular/cdk": 1.0.0-rc.2
-    "@rx-angular/template": 1.0.0-rc.3
+    "@rx-angular/cdk": 2.0.0
+    "@rx-angular/template": 2.0.0
     "@types/node": ^16.11.56
     rxfire: ^6.0.0
     rxjs: ~7.4.0
@@ -11308,7 +11307,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.5.0, tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0":
+"tslib@npm:2.5.0, tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.1":
   version: 2.5.0
   resolution: "tslib@npm:2.5.0"
   checksum: ae3ed5f9ce29932d049908ebfdf21b3a003a85653a9a140d614da6b767a93ef94f460e52c3d787f0e4f383546981713f165037dc2274df212ea9f8a4541004e1
