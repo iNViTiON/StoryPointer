@@ -10419,21 +10419,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.5.5":
+"rxjs@npm:^7.5.5, rxjs@npm:~7.8.0":
   version: 7.8.0
   resolution: "rxjs@npm:7.8.0"
   dependencies:
     tslib: ^2.1.0
   checksum: 61b4d4fd323c1043d8d6ceb91f24183b28bcf5def4f01ca111511d5c6b66755bc5578587fe714ef5d67cf4c9f2e26f4490d4e1d8cabf9bd5967687835e9866a2
-  languageName: node
-  linkType: hard
-
-"rxjs@npm:~7.4.0":
-  version: 7.4.0
-  resolution: "rxjs@npm:7.4.0"
-  dependencies:
-    tslib: ~2.1.0
-  checksum: 6b33172a760dcad6882fdc836ee8cf1ebe160dd7eaad95c45a12338ffdaa96eb41e48e6c25bbd3d1fdf45075949ff447954bc17a9d01c688558a67967d09c114
   languageName: node
   linkType: hard
 
@@ -10966,7 +10957,7 @@ __metadata:
     "@rx-angular/template": 2.0.0
     "@types/node": ^18.15.11
     rxfire: ^6.0.0
-    rxjs: ~7.4.0
+    rxjs: ~7.8.0
     tslib: ^2.3.0
     typescript: ~4.8.2
     zone.js: ~0.11.4
@@ -11366,7 +11357,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^1.9.0 || ~2.1.0, tslib@npm:~2.1.0":
+"tslib@npm:^1.9.0 || ~2.1.0":
   version: 2.1.0
   resolution: "tslib@npm:2.1.0"
   checksum: aa189c8179de0427b0906da30926fd53c59d96ec239dff87d6e6bc831f608df0cbd6f77c61dabc074408bd0aa0b9ae4ec35cb2c15f729e32f37274db5730cb78
