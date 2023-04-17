@@ -4,7 +4,7 @@ import {
   Auth,
   browserSessionPersistence,
   signInAnonymously,
-  user,
+  user
 } from "@angular/fire/auth";
 import { Database, objectVal, onDisconnect, ref } from "@angular/fire/database";
 import type { CollectionReference, Timestamp } from "@angular/fire/firestore";
@@ -18,7 +18,7 @@ import {
   Firestore,
   increment,
   serverTimestamp,
-  writeBatch,
+  writeBatch
 } from "@angular/fire/firestore";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -44,7 +44,7 @@ import {
   switchMap,
   switchMapTo,
   tap,
-  withLatestFrom,
+  withLatestFrom
 } from "rxjs";
 
 @Component({
@@ -222,7 +222,7 @@ export class AppComponent implements OnInit {
       // check pending write to prevent local data reveal when DB not write yet
       map((snapshot) => !snapshot.metadata.hasPendingWrites && snapshot.data()),
       filter((data): data is false | RoomData => data !== undefined),
-      map((data) => data !== false && data.members.length === data.voteCount),
+      map((data) => data !== false && data.members.length <= (data.voteCount ?? 0)),
       withLatestFrom(
         this.roomId$.pipe(
           map((roomId) =>
