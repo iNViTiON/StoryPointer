@@ -35,14 +35,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular-devkit/build-angular@npm:^15.2.4":
-  version: 15.2.5
-  resolution: "@angular-devkit/build-angular@npm:15.2.5"
+"@angular-devkit/architect@npm:0.1502.7":
+  version: 0.1502.7
+  resolution: "@angular-devkit/architect@npm:0.1502.7"
+  dependencies:
+    "@angular-devkit/core": 15.2.7
+    rxjs: 6.6.7
+  checksum: 4bb90d719038af6bd3c0b8a1dd032acbf084c79b8a583a34a62056db95b3eca8ea41e05834d22efd290e6a435bb382827b943ae9a0e1aa368f821521760bea4e
+  languageName: node
+  linkType: hard
+
+"@angular-devkit/build-angular@npm:^15.2.7":
+  version: 15.2.7
+  resolution: "@angular-devkit/build-angular@npm:15.2.7"
   dependencies:
     "@ampproject/remapping": 2.2.0
-    "@angular-devkit/architect": 0.1502.5
-    "@angular-devkit/build-webpack": 0.1502.5
-    "@angular-devkit/core": 15.2.5
+    "@angular-devkit/architect": 0.1502.7
+    "@angular-devkit/build-webpack": 0.1502.7
+    "@angular-devkit/core": 15.2.7
     "@babel/core": 7.20.12
     "@babel/generator": 7.20.14
     "@babel/helper-annotate-as-pure": 7.18.6
@@ -54,7 +64,7 @@ __metadata:
     "@babel/runtime": 7.20.13
     "@babel/template": 7.20.7
     "@discoveryjs/json-ext": 0.5.7
-    "@ngtools/webpack": 15.2.5
+    "@ngtools/webpack": 15.2.7
     ansi-colors: 4.1.3
     autoprefixer: 10.4.13
     babel-loader: 9.1.2
@@ -128,20 +138,20 @@ __metadata:
       optional: true
     tailwindcss:
       optional: true
-  checksum: a0fd83cdffb60c4b9101fb67d11fdf54baa54d43f8d4045054562e5fa1cc740a602e30e7eb452401ba91dfc17d209d34dbe0ec28a1b3c73ddd80034af7e2f814
+  checksum: 411db28a05e05aae802af598f00e90fc2537f7f0f2ca573da772bf9a4d0072cdcfd8726baf2c78e046f1e9474f14fce697f3ef55e984ebe379b2c3180da009c9
   languageName: node
   linkType: hard
 
-"@angular-devkit/build-webpack@npm:0.1502.5":
-  version: 0.1502.5
-  resolution: "@angular-devkit/build-webpack@npm:0.1502.5"
+"@angular-devkit/build-webpack@npm:0.1502.7":
+  version: 0.1502.7
+  resolution: "@angular-devkit/build-webpack@npm:0.1502.7"
   dependencies:
-    "@angular-devkit/architect": 0.1502.5
+    "@angular-devkit/architect": 0.1502.7
     rxjs: 6.6.7
   peerDependencies:
     webpack: ^5.30.0
     webpack-dev-server: ^4.0.0
-  checksum: 940bc33944a7cbed4d93dd4b9c666fe88ad85ceb8bd77322ee4fb93db55ae522b7de28c1ab79253519ea54ee0fb1bf68dc7d9ea45e42560b220dd90d9bef74c1
+  checksum: e7c3f3e0c636baf1a479ac8e19c1e882f4b0ddaf2e65f47c8bb5f5ac0ecfd3b250ee9504739940ff0e9bc50bd54d0bc436519401a7cfb40a88a4982e4a62f663
   languageName: node
   linkType: hard
 
@@ -160,6 +170,24 @@ __metadata:
     chokidar:
       optional: true
   checksum: 4f44e190ba5c2507e033270842192a6d97c0ad4ecbf18fa790208b042dcee706ab040e3ccd3223b214811492e32091b0dea2fa621a1adbed1f0108eea678a080
+  languageName: node
+  linkType: hard
+
+"@angular-devkit/core@npm:15.2.7":
+  version: 15.2.7
+  resolution: "@angular-devkit/core@npm:15.2.7"
+  dependencies:
+    ajv: 8.12.0
+    ajv-formats: 2.1.1
+    jsonc-parser: 3.2.0
+    rxjs: 6.6.7
+    source-map: 0.7.4
+  peerDependencies:
+    chokidar: ^3.5.2
+  peerDependenciesMeta:
+    chokidar:
+      optional: true
+  checksum: 00c404916cb848377a7edda797f3e35824b0235b3cbc8f4d53812574bc2bd863d66a5c3b1a94b1166acf39fd39197478b9d1024e1b6e30b7dc05f07bd8f48e37
   languageName: node
   linkType: hard
 
@@ -3575,14 +3603,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ngtools/webpack@npm:15.2.5":
-  version: 15.2.5
-  resolution: "@ngtools/webpack@npm:15.2.5"
+"@ngtools/webpack@npm:15.2.7":
+  version: 15.2.7
+  resolution: "@ngtools/webpack@npm:15.2.7"
   peerDependencies:
     "@angular/compiler-cli": ^15.0.0
     typescript: ">=4.8.2 <5.0"
     webpack: ^5.54.0
-  checksum: 22eed6294eb12b4e3e02123ececf84310ca5f30c0465d3bce92b60cad13179bf80846c3cac59b011f0fa01ad46935d8e78e66295dded7ad23e7ba696a5496cd5
+  checksum: 4ef7cd596615acd2e52496f900a811da736c92ba45a0dbe08b7e05880d13db436acac6da3acb9302e1a94c1960ec93bad37e08d6bf9ae2dd5444c4d212d4480f
   languageName: node
   linkType: hard
 
@@ -10937,7 +10965,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "story-pointer@workspace:."
   dependencies:
-    "@angular-devkit/build-angular": ^15.2.4
+    "@angular-devkit/build-angular": ^15.2.7
     "@angular/animations": ^15.2.4
     "@angular/cdk": 15.2.6
     "@angular/cli": ^15.2.4
