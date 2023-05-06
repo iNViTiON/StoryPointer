@@ -24,7 +24,7 @@
     "fsrules": "firebase deploy --only firestore",
     "functions": "yarn workspace functions deploy",
     "sdks": "yarn dlx @yarnpkg/sdks vscode",
-    "volta-update": "volta pin node@latest yarn && yarn install --mode=update-lockfile"
+    "volta-update": "volta pin node@latest yarn@3 && yarn install --mode=update-lockfile"
   },
   "private": true,
   "workspaces": [
@@ -59,6 +59,6 @@
   },
   "volta": {
     "node": "20.1.0",
-    "yarn": "4.0.0-rc.43"
+    "yarn": "3.5.1"
   }
 }
