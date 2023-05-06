@@ -22,7 +22,9 @@
     "watch": "ng build --watch --configuration development",
     "dbrules": "firebase deploy --only database",
     "fsrules": "firebase deploy --only firestore",
-    "functions": "yarn workspace functions deploy"
+    "functions": "yarn workspace functions deploy",
+    "sdks": "yarn dlx @yarnpkg/sdks vscode",
+    "volta-update": "volta pin node@latest yarn && yarn install --mode=update-lockfile"
   },
   "private": true,
   "workspaces": [
@@ -51,12 +53,12 @@
     "@angular-devkit/build-angular": "^16.0.0",
     "@angular/cli": "^16.0.0",
     "@angular/compiler-cli": "^16.0.0",
-    "@playwright/test": "^1.32.0",
-    "@types/node": "^18.15.11",
+    "@playwright/test": "^1.33.0",
+    "@types/node": "^20.1.0",
     "typescript": "~5.0.4"
   },
   "volta": {
     "node": "20.1.0",
-    "yarn": "3.5.1"
+    "yarn": "4.0.0-rc.43"
   }
 }

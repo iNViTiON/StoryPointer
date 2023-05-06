@@ -33,8 +33,10 @@ jobs:
           key: ${{ runner.os }}-node-${{ steps.info.outputs.node_version }}-yarn-${{ steps.info.outputs.yarn_version }}-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-${{ steps.info.outputs.node_version }}-yarn-${{ steps.info.outputs.yarn_version }}-
-      - run: yarn
-      - run: yarn build
+      - name: Install dependencies
+        run: yarn install --immutable
+      - name: Build web
+        run: yarn build
       - uses: FirebaseExtended/action-hosting-deploy@v0
         name: deploy
         with:

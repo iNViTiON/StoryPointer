@@ -35,9 +35,11 @@ jobs:
           key: ${{ runner.os }}-node-${{ steps.info.outputs.node_version }}-yarn-${{ steps.info.outputs.yarn_version }}-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-node-${{ steps.info.outputs.node_version }}-yarn-${{ steps.info.outputs.yarn_version }}-
-      - run: yarn
+      - name: Install dependencies
+        run: yarn install --immutable
       # - run: npm install -g firebase-tools
-      - run: yarn build
+      - name: Build web
+        run: yarn build
       # FIXME: need firebase token
       # - run: yarn dbrules
       # - run: yarn functions

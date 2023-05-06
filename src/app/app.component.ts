@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, inject } from "@angular/core";
 import type { User } from "@angular/fire/auth";
 import {
   Auth,
@@ -6,24 +6,26 @@ import {
   signInAnonymously,
   user
 } from "@angular/fire/auth";
-import { Database, objectVal, onDisconnect, ref } from "@angular/fire/database";
+import { Database, objectVal, onDisconnect, ref, set } from "@angular/fire/database";
 import type { CollectionReference, Timestamp } from "@angular/fire/firestore";
 import {
+  Firestore,
   addDoc,
   arrayUnion,
   collection,
   deleteField,
   doc,
   docSnapshots,
-  Firestore,
   increment,
   serverTimestamp,
   writeBatch
 } from "@angular/fire/firestore";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
-import { set } from "firebase/database";
 import {
+  Observable,
+  ReplaySubject,
+  Subject,
   combineLatest,
   delay,
   delayWhen,
@@ -32,17 +34,13 @@ import {
   from,
   map,
   merge,
-  Observable,
   of,
   pluck,
-  ReplaySubject,
   retryWhen,
   share,
   skip,
   startWith,
-  Subject,
   switchMap,
-  switchMapTo,
   tap,
   withLatestFrom
 } from "rxjs";
@@ -53,6 +51,13 @@ import {
   styleUrls: ["./app.component.scss"],
 })
 export class AppComponent implements OnInit {
+  private activatedRoute = inject(ActivatedRoute);
+  private fireAuth = inject(Auth);
+  private rtdb = inject(Database);
+  private firestore = inject(Firestore);
+  private router = inject(Router);
+  private titleService = inject(Title)
+
   #mainSwitchSubject$ = new Subject<void>();
   public mainSwitch$ = this.#mainSwitchSubject$.pipe(
     startWith(undefined),
@@ -80,14 +85,7 @@ export class AppComponent implements OnInit {
 
   public points = ["½", "1", "2", "3", "5", "8", "13"];
 
-  constructor(
-    private activatedRoute: ActivatedRoute,
-    private fireAuth: Auth,
-    private rtdb: Database,
-    private firestore: Firestore,
-    private router: Router,
-    private titleService: Title
-  ) {
+  constructor() {
     this.debug$ = this.activatedRoute.queryParamMap.pipe(
       map((params) => params.get("debug")),
       map((debug) => debug === "true")
@@ -115,7 +113,7 @@ export class AppComponent implements OnInit {
     this.isRtdbOnline$
       .pipe(
         filter((isOnline) => isOnline),
-        switchMapTo(this.userId$),
+        switchMap(() => this.userId$),
         map((userId) => ref(this.rtdb, `presence/users/${userId}`))
       )
       .subscribe((ref) =>
