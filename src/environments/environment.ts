@@ -14,7 +14,7 @@ export const environment = {
     authDomain: "invition-storypointer.firebaseapp.com",
     messagingSenderId: "787149245832",
   },
-  useEmulators: true,
+  useEmulators: false,
   production: false,
 };
 
