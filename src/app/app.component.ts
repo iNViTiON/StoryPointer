@@ -27,6 +27,7 @@ import {
   ReplaySubject,
   Subject,
   combineLatest,
+  combineLatestWith,
   delay,
   delayWhen,
   filter,
@@ -35,8 +36,7 @@ import {
   map,
   merge,
   of,
-  pluck,
-  retryWhen,
+  retry,
   share,
   skip,
   startWith,
@@ -143,54 +143,48 @@ export class AppComponent implements OnInit {
     user(this.fireAuth)
       .pipe(
         filter((user): user is User => user !== null),
-        switchMap((user) =>
-          this.roomId$.pipe(
-            switchMap((roomId) => {
-              const batch = writeBatch(this.firestore);
-              batch.update(doc<RoomData>(this.roomCollection, roomId), {
-                members: arrayUnion(user.uid),
-              });
-              batch.update(
-                doc<UserData>(this.userCollection, user.uid),
-                `forRoom`,
-                roomId
-              );
-              return from(batch.commit());
-            })
-          )
-        ),
-        retryWhen((err$) => err$.pipe(delay(100))),
+        combineLatestWith(this.roomId$),
+        switchMap(([user, roomId]) => {
+          const batch = writeBatch(this.firestore);
+          batch.update(doc<RoomData>(this.roomCollection, roomId), {
+            members: arrayUnion(user.uid),
+          });
+          batch.update(
+            doc<UserData>(this.userCollection, user.uid),
+            `forRoom`,
+            roomId
+          );
+          return batch.commit();
+        }),
+        retry({ delay: (err$) => err$.pipe(delay(100)) }),
         first()
       )
       .subscribe();
     user(this.fireAuth)
       .pipe(
         filter((user): user is User => user !== null),
-        switchMap((user) =>
-          this.roomId$.pipe(
-            switchMap((roomId) =>
-              docSnapshots(doc<RoomData>(this.roomCollection, roomId)).pipe(
-                retryWhen((err$) =>
-                  err$.pipe(
-                    delayWhen(() => {
-                      const batch = writeBatch(this.firestore);
-                      batch.update(doc<RoomData>(this.roomCollection, roomId), {
-                        members: arrayUnion(user.uid),
-                      });
-                      batch.update(
-                        doc<UserData>(this.userCollection, user.uid),
-                        `forRoom`,
-                        roomId
-                      );
-                      return from(batch.commit());
-                    })
-                  )
-                )
+        combineLatestWith(this.roomId$),
+        switchMap(([user, roomId]) =>
+          docSnapshots(doc<RoomData>(this.roomCollection, roomId)).pipe(
+            retry({
+              delay: (err$) => err$.pipe(
+                delayWhen(() => {
+                  const batch = writeBatch(this.firestore);
+                  batch.update(doc<RoomData>(this.roomCollection, roomId), {
+                    members: arrayUnion(user.uid),
+                  });
+                  batch.update(
+                    doc<UserData>(this.userCollection, user.uid),
+                    `forRoom`,
+                    roomId
+                  );
+                  return batch.commit();
+                })
               )
-            )
+            })
           )
         ),
-        retryWhen((err$) => err$.pipe(delay(100)))
+        retry({ delay: (err$) => err$.pipe(delay(100)) })
       )
       .subscribe();
     const roomRaw$ = combineLatest([
@@ -200,7 +194,7 @@ export class AppComponent implements OnInit {
       switchMap(([roomId]) =>
         docSnapshots(doc<RoomData>(this.roomCollection, roomId))
       ),
-      retryWhen((err) => err.pipe(delay(1000))),
+      retry({ delay: (err) => err.pipe(delay(1000)) }),
       share({
         connector: () => new ReplaySubject(1),
         resetOnComplete: true,
@@ -240,15 +234,17 @@ export class AppComponent implements OnInit {
           : of(undefined)
       ),
       map((roomVoteData) => roomVoteData?.votes ?? null),
-      retryWhen((err) =>
-        err.pipe(
-          delay(30),
-          tap(() => console.warn("retry"))
-        )
+      retry({
+        delay: (err) =>
+          err.pipe(
+            delay(30),
+            tap(() => console.warn("retry"))
+          )
+      }
       )
     );
     this.voteData$ = combineLatest({
-      vote: this.userData$.pipe(pluck("vote")),
+      vote: this.userData$.pipe(map(userData => userData.vote)),
       votes: this.roomVoteResult$,
     }).pipe(
       startWith({
@@ -299,7 +295,7 @@ export class AppComponent implements OnInit {
         ),
         map((ref) => ref.id),
         filter((roomId): roomId is string => roomId !== null),
-        retryWhen((err$) => err$.pipe(delay(100)))
+        retry({ delay: (err$) => err$.pipe(delay(100)) })
       )
       .subscribe((roomId) => {
         this.router.navigate(["/"], { fragment: roomId });
