@@ -101,12 +101,12 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "StoryPointer:build:production",
-              "hmr": false
+              "hmr": false,
+              "browserTarget": "StoryPointer:build:production"
             },
             "development": {
-              "browserTarget": "StoryPointer:build:development",
-              "hmr": true
+              "hmr": true,
+              "browserTarget": "StoryPointer:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -114,7 +114,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "StoryPointer:build"
+            "buildTarget": "StoryPointer:build"
           }
         },
         "deploy": {

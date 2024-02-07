@@ -1,57 +1,39 @@
-<ng-container *ngIf="mainSwitch$ | push">
-  <span *ngIf="!(isRtdbOnline$ | push)">Connecting…</span>
-  <ng-container *ngIf="debug$ | push">
-    <br />
-    {{ roomId$ | push | json }} - {{ roomExist$ | push | json }} - online:
-    {{ isRtdbOnline$ | push | json }}
-    <br />
-    {{ userData$ | push | json }}
-    <br />
-  </ng-container>
-  <ng-container *rxLet="roomId$ as roomId; suspense: noRoom">
-    <ng-container *rxLet="roomExist$ as roomExist; suspense: loadingRoom">
-      <ng-container
-        *ngIf="roomExist === false; then roomNotFound; else working"
-      ></ng-container>
-    </ng-container>
-  </ng-container>
-
-  <ng-template #loadingRoom>
-    <div class="full center">Loading room data…</div>
-  </ng-template>
-
-  <ng-template #roomNotFound>
-    <div class="full center">
-      Room not found <br />
-      <button mat-flat-button color="accent" (click)="home()">
-        Back to home
-      </button>
+@if (mainSwitch$ | push) { @if (!(isRtdbOnline$ | push)) {
+<span>Connecting…</span>
+} @if (debug$ | push) {
+<br />
+{{ roomId$ | push | json }} - {{ roomExist$ | push | json }} - online:
+{{ isRtdbOnline$ | push | json }}
+<br />
+{{ userData$ | push | json }}
+<br />
+}
+<ng-container *rxLet="roomId$ as roomId">
+  @if (!!roomId) {
+  <ng-container *rxLet="roomExist$ as roomExist; suspense: loadingRoom">
+    @if (roomExist === false) {
+    <div>
+      <div class="full center">
+        Room not found <br />
+        <button mat-flat-button color="accent" (click)="home()">
+          Back to home
+        </button>
+      </div>
     </div>
-  </ng-template>
-
-  <ng-template #noRoom>
-    <div class="full center">
-      <button mat-flat-button color="primary" (click)="newRoom()">
-        New Room
-      </button>
-    </div>
-  </ng-template>
-
-  <ng-template #working>
+    } @else {
     <div class="full center">
       {{ roomVoteCount$ | push }} /
       {{ (roomData$ | push)?.members?.length }} vote(s)
       <br />
-      <ng-container *ngIf="debug$ | push">
-        <ng-container *ngIf="roomVoteResult$ | push as result">
-          {{ result | json }}
-        </ng-container>
-        <br />
-        {{ roomData$ | push | json }}
-      </ng-container>
+      @if (debug$ | push) { @if (roomVoteResult$ | push; as result) {
+      {{ result | json }}
+      }
+      <br />
+      {{ roomData$ | push | json }}
+      }
       <div class="vote-container" *rxLet="voteData$ as voteData">
+        @for (point of points; track point) {
         <button
-          *rxFor="let point of points"
           mat-flat-button
           matBadgeColor="warn"
           [color]="voteData.vote === point ? 'accent' : 'primary'"
@@ -60,15 +42,28 @@
         >
           {{ point }}
         </button>
+        }
       </div>
     </div>
+    @if ((roomData$ | push)?.createdBy === (userId$ | push)) {
+    <button mat-flat-button color="warn" (click)="reset()">Reset</button>
+    } }
+  </ng-container>
+  } @else {
+  <div class="full center">
     <button
-      *ngIf="(roomData$ | push)?.createdBy === (userId$ | push)"
       mat-flat-button
-      color="warn"
-      (click)="reset()"
+      color="primary"
+      (click)="newRoom()"
+      [disabled]="(loggedIn$ | push) === false"
     >
-      Reset
+      New Room
     </button>
-  </ng-template>
+  </div>
+  }
 </ng-container>
+}
+
+<ng-template #loadingRoom>
+  <div class="full center">Loading room data…</div>
+</ng-template>

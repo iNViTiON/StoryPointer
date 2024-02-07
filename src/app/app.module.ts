@@ -1,3 +1,6 @@
+import { RxPush } from "@rx-angular/template/push";
+import { RxLet } from "@rx-angular/template/let";
+import { RxFor } from "@rx-angular/template/for";
 import { NgModule } from "@angular/core";
 import { initializeApp, provideFirebaseApp } from "@angular/fire/app";
 import { connectAuthEmulator, getAuth, provideAuth } from "@angular/fire/auth";
@@ -16,9 +19,6 @@ import { MatButtonModule } from "@angular/material/button";
 import { BrowserModule } from "@angular/platform-browser";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { RouterModule } from "@angular/router";
-import { ForModule } from "@rx-angular/template/for";
-import { LetModule } from "@rx-angular/template/let";
-import { PushModule } from "@rx-angular/template/push";
 import { environment } from "../environments/environment";
 import { AppComponent } from "./app.component";
 
@@ -27,11 +27,11 @@ import { AppComponent } from "./app.component";
   imports: [
     BrowserAnimationsModule,
     BrowserModule,
-    ForModule,
-    LetModule,
+    RxFor,
+    RxLet,
     MatBadgeModule,
     MatButtonModule,
-    PushModule,
+    RxPush,
     RouterModule.forRoot([]),
     provideAuth(() => {
       const auth = getAuth();
