@@ -7,62 +7,74 @@
 <br />
 {{ userData$ | push | json }}
 <br />
-}
-<ng-container *rxLet="roomId$ as roomId">
-  @if (!!roomId) {
-  <ng-container *rxLet="roomExist$ as roomExist; suspense: loadingRoom">
-    @if (roomExist === false) {
-    <div>
-      <div class="full center">
-        Room not found <br />
-        <button mat-flat-button color="accent" (click)="home()">
-          Back to home
-        </button>
-      </div>
-    </div>
-    } @else {
+} @if (roomId$ | push) {
+<ng-container *rxLet="roomExist$ as roomExist; suspense: loadingRoom">
+  @if (roomExist === false) {
+  <div>
     <div class="full center">
-      {{ roomVoteCount$ | push }} /
-      {{ (roomData$ | push)?.members?.length }} vote(s)
-      <br />
-      @if (debug$ | push) { @if (roomVoteResult$ | push; as result) {
-      {{ result | json }}
-      }
-      <br />
-      {{ roomData$ | push | json }}
-      }
-      <div class="vote-container" *rxLet="voteData$ as voteData">
-        @for (point of points; track point) {
-        <button
-          mat-flat-button
-          matBadgeColor="warn"
-          [color]="voteData.vote === point ? 'accent' : 'primary'"
-          [matBadge]="voteData.votes?.[point] || undefined"
-          (click)="vote(point)"
-        >
-          {{ point }}
-        </button>
-        }
-      </div>
+      Room not found <br />
+      <button mat-flat-button color="accent" (click)="home()">
+        Back to home
+      </button>
     </div>
-    @if ((roomData$ | push)?.createdBy === (userId$ | push)) {
-    <button mat-flat-button color="warn" (click)="reset()">Reset</button>
-    } }
-  </ng-container>
+  </div>
   } @else {
   <div class="full center">
-    <button
-      mat-flat-button
-      color="primary"
-      (click)="newRoom()"
-      [disabled]="(loggedIn$ | push) === false"
-    >
-      New Room
-    </button>
+    {{ roomVoteCount$ | push }} /
+    {{ (roomData$ | push)?.members?.length }} vote(s)
+    <br />
+    @if (debug$ | push) { @if (roomVoteResult$ | push; as result) {
+    {{ result | json }}
+    }
+    <br />
+    {{ roomData$ | push | json }}
+    }
+    <div class="vote-container" *rxLet="voteData$ as voteData">
+      @for (point of points; track point) {
+      <button
+        mat-flat-button
+        matBadgeColor="warn"
+        [color]="showVoted() && voteData.vote === point ? 'accent' : 'primary'"
+        [matBadge]="voteData.votes?.[point] || undefined"
+        (click)="vote(point)"
+      >
+        {{ point }}
+      </button>
+      }
+    </div>
   </div>
-  }
+  <button
+    mat-flat-button
+    [color]="
+      showVoted() ? 'warn' : (voteData$ | push).vote ? 'primary' : 'accent'
+    "
+    (click)="toggleVoted()"
+  >
+    {{
+      showVoted()
+        ? "Hide my vote"
+        : (voteData$ | push).vote
+        ? "Voted"
+        : "Not voted yet"
+    }}
+  </button>
+  @if ((roomData$ | push)?.createdBy === (userId$ | push)) {
+  <br />
+  <button mat-flat-button color="warn" (click)="reset()">Reset</button>
+  } }
 </ng-container>
-}
+} @else {
+<div class="full center">
+  <button
+    mat-flat-button
+    color="primary"
+    (click)="newRoom()"
+    [disabled]="(loggedIn$ | push) === false"
+  >
+    New Room
+  </button>
+</div>
+} }
 
 <ng-template #loadingRoom>
   <div class="full center">Loading room data…</div>

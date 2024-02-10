@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from "@angular/core";
+import { Component, OnInit, inject, signal } from "@angular/core";
 import type { User } from "@angular/fire/auth";
 import {
   Auth,
@@ -52,40 +52,42 @@ import {
   styleUrls: ["./app.component.scss"],
 })
 export class AppComponent implements OnInit {
-  private activatedRoute = inject(ActivatedRoute);
-  private fireAuth = inject(Auth);
-  private rtdb = inject(Database);
-  private firestore = inject(Firestore);
-  private router = inject(Router);
-  private titleService = inject(Title)
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly fireAuth = inject(Auth);
+  private readonly rtdb = inject(Database);
+  private readonly firestore = inject(Firestore);
+  private readonly router = inject(Router);
+  private readonly titleService = inject(Title)
 
-  #mainSwitchSubject$ = new Subject<void>();
-  public mainSwitch$ = this.#mainSwitchSubject$.pipe(
+  readonly #mainSwitchSubject$ = new Subject<void>();
+  public readonly mainSwitch$ = this.#mainSwitchSubject$.pipe(
     startWith(undefined),
     switchMap(() => merge(of(false), of(true).pipe(delay(1))))
   );
 
-  public debug$: Observable<boolean>;
+  public readonly debug$: Observable<boolean>;
 
-  public isRtdbOnline$: Observable<boolean>;
+  public readonly isRtdbOnline$: Observable<boolean>;
 
-  public roomId$: Observable<string | null>;
-  public roomData$: Observable<RoomData>;
-  public roomExist$: Observable<boolean>;
-  public roomVoteCount$: Observable<number>;
-  public roomVoteResult$: Observable<null | RoomVoteData["votes"]>;
-  public loggedIn$: Observable<boolean>;
-  public userData$: Observable<UserData>;
-  public userId$: Observable<string>;
-  public voteData$: Observable<{
+  public readonly showVoted = signal(true);
+
+  public readonly roomId$: Observable<string | null>;
+  public readonly roomData$: Observable<RoomData>;
+  public readonly roomExist$: Observable<boolean>;
+  public readonly roomVoteCount$: Observable<number>;
+  public readonly roomVoteResult$: Observable<null | RoomVoteData["votes"]>;
+  public readonly loggedIn$: Observable<boolean>;
+  public readonly userData$: Observable<UserData>;
+  public readonly userId$: Observable<string>;
+  public readonly voteData$: Observable<{
     vote: undefined | string;
     votes: null | RoomVoteData["votes"];
   }>;
 
-  private roomCollection: CollectionReference<RoomData>;
-  private userCollection: CollectionReference<UserData>;
+  private readonly roomCollection: CollectionReference<RoomData>;
+  private readonly userCollection: CollectionReference<UserData>;
 
-  public points = ["½", "1", "2", "3", "5", "8", "13"];
+  public readonly points = ["½", "1", "2", "3", "5", "8", "13"];
 
   constructor() {
     this.debug$ = this.activatedRoute.queryParamMap.pipe(
@@ -372,6 +374,8 @@ export class AppComponent implements OnInit {
         batch.commit();
       });
   }
+
+  public readonly toggleVoted = (): void => this.showVoted.update((show) => !show);
 }
 
 interface UserData {
