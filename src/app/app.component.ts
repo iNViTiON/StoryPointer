@@ -29,6 +29,7 @@ import {
   Subject,
   combineLatest,
   combineLatestWith,
+  debounceTime,
   defer,
   delay,
   distinctUntilChanged,
@@ -195,6 +196,7 @@ export class AppComponent implements OnInit {
     );
     this.roomExist$ = roomRaw$.pipe(map((snapshot) => snapshot.exists()));
     this.roomVoteCount$ = this.roomData$.pipe(
+      debounceTime(100),
       map((data) => data.voteCount ?? 0)
     );
     this.roomVoteResult$ = roomRaw$.pipe(
@@ -215,6 +217,7 @@ export class AppComponent implements OnInit {
           )
         )
       ),
+      debounceTime(100),
       switchMap(([reveal, voteDoc]) =>
         reveal
           ? docSnapshots(voteDoc).pipe(map((snapshot) => snapshot?.data()))
