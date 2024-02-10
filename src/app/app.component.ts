@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from "@angular/core";
+import { Component, OnInit, inject, signal } from "@angular/core";
 import type { User } from "@angular/fire/auth";
 import {
   Auth,
@@ -7,7 +7,7 @@ import {
   user
 } from "@angular/fire/auth";
 import { Database, objectVal, onDisconnect, ref, set } from "@angular/fire/database";
-import type { CollectionReference, Timestamp } from "@angular/fire/firestore";
+import type { CollectionReference, DocumentData, DocumentReference, Timestamp, WriteBatch } from "@angular/fire/firestore";
 import {
   Firestore,
   addDoc,
@@ -22,26 +22,27 @@ import {
 } from "@angular/fire/firestore";
 import { Title } from "@angular/platform-browser";
 import { ActivatedRoute, Router } from "@angular/router";
+import { shareLatest } from "@invition/rxjs-sharelatest";
 import {
+  EMPTY,
   Observable,
-  ReplaySubject,
   Subject,
   combineLatest,
   combineLatestWith,
+  debounceTime,
+  defer,
   delay,
-  delayWhen,
+  distinctUntilChanged,
   filter,
   first,
-  from,
   map,
   merge,
   of,
   retry,
-  share,
   skip,
   startWith,
   switchMap,
-  tap,
+  timer,
   withLatestFrom
 } from "rxjs";
 
@@ -51,39 +52,42 @@ import {
   styleUrls: ["./app.component.scss"],
 })
 export class AppComponent implements OnInit {
-  private activatedRoute = inject(ActivatedRoute);
-  private fireAuth = inject(Auth);
-  private rtdb = inject(Database);
-  private firestore = inject(Firestore);
-  private router = inject(Router);
-  private titleService = inject(Title)
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly fireAuth = inject(Auth);
+  private readonly rtdb = inject(Database);
+  private readonly firestore = inject(Firestore);
+  private readonly router = inject(Router);
+  private readonly titleService = inject(Title)
 
-  #mainSwitchSubject$ = new Subject<void>();
-  public mainSwitch$ = this.#mainSwitchSubject$.pipe(
+  readonly #mainSwitchSubject$ = new Subject<void>();
+  public readonly mainSwitch$ = this.#mainSwitchSubject$.pipe(
     startWith(undefined),
     switchMap(() => merge(of(false), of(true).pipe(delay(1))))
   );
 
-  public debug$: Observable<boolean>;
+  public readonly debug$: Observable<boolean>;
 
-  public isRtdbOnline$: Observable<boolean>;
+  public readonly isRtdbOnline$: Observable<boolean>;
 
-  public roomId$: Observable<string>;
-  public roomData$: Observable<RoomData>;
-  public roomExist$: Observable<boolean>;
-  public roomVoteCount$: Observable<number>;
-  public roomVoteResult$: Observable<null | RoomVoteData["votes"]>;
-  public userData$: Observable<UserData>;
-  public userId$: Observable<string>;
-  public voteData$: Observable<{
+  public readonly showVoted = signal(true);
+
+  public readonly roomId$: Observable<string | null>;
+  public readonly roomData$: Observable<RoomData>;
+  public readonly roomExist$: Observable<boolean>;
+  public readonly roomVoteCount$: Observable<number>;
+  public readonly roomVoteResult$: Observable<null | RoomVoteData["votes"]>;
+  public readonly loggedIn$: Observable<boolean>;
+  public readonly userData$: Observable<UserData>;
+  public readonly userId$: Observable<string>;
+  public readonly voteData$: Observable<{
     vote: undefined | string;
     votes: null | RoomVoteData["votes"];
   }>;
 
-  private roomCollection: CollectionReference<RoomData>;
-  private userCollection: CollectionReference<UserData>;
+  private readonly roomCollection: CollectionReference<RoomData>;
+  private readonly userCollection: CollectionReference<UserData>;
 
-  public points = ["½", "1", "2", "3", "5", "8", "13"];
+  public readonly points = ["½", "1", "2", "3", "5", "8", "13"];
 
   constructor() {
     this.debug$ = this.activatedRoute.queryParamMap.pipe(
@@ -102,19 +106,16 @@ export class AppComponent implements OnInit {
     this.isRtdbOnline$ = objectVal<boolean>(
       ref(this.rtdb, ".info/connected")
     ).pipe(
-      share({
-        connector: () => new ReplaySubject<boolean>(1),
-        resetOnComplete: true,
-        resetOnError: true,
-        resetOnRefCountZero: true,
-      })
+      shareLatest()
     );
+    this.loggedIn$ = user(this.fireAuth).pipe(map((user) => user !== null), startWith(false));
     this.userId$ = user(this.fireAuth).pipe(map((user) => user?.uid ?? ""));
     this.isRtdbOnline$
       .pipe(
         filter((isOnline) => isOnline),
         switchMap(() => this.userId$),
-        map((userId) => ref(this.rtdb, `presence/users/${userId}`))
+        map((userId) => ref(this.rtdb, `presence/users/${userId}`)),
+        retry({ delay: 100 }),
       )
       .subscribe((ref) =>
         onDisconnect(ref)
@@ -124,40 +125,32 @@ export class AppComponent implements OnInit {
     this.userData$ = user(this.fireAuth).pipe(
       filter((user): user is User => user !== null),
       switchMap((user) =>
-        docSnapshots(doc<UserData>(this.userCollection, user.uid))
+        docSnapshots(doc<UserData, DocumentData>(this.userCollection, user.uid))
       ),
       map((snapshot) => snapshot.data()),
       filter((data): data is UserData => data !== undefined),
-      share({
-        connector: () => new ReplaySubject(1),
-        resetOnComplete: true,
-        resetOnError: true,
-        resetOnRefCountZero: true,
-      })
+      shareLatest(),
     );
-    this.roomId$ = this.activatedRoute.fragment.pipe(
-      filter(
-        (fragment): fragment is string => fragment !== null && fragment !== ""
-      )
-    );
+    this.roomId$ = this.activatedRoute.fragment.pipe(distinctUntilChanged(),);
     user(this.fireAuth)
       .pipe(
         filter((user): user is User => user !== null),
         combineLatestWith(this.roomId$),
         switchMap(([user, roomId]) => {
+          if (roomId === null) return EMPTY;
+
           const batch = writeBatch(this.firestore);
-          batch.update(doc<RoomData>(this.roomCollection, roomId), {
+          batch.update(doc<RoomData, DocumentData>(this.roomCollection, roomId), {
             members: arrayUnion(user.uid),
           });
           batch.update(
-            doc<UserData>(this.userCollection, user.uid),
+            doc<UserData, DocumentData>(this.userCollection, user.uid),
             `forRoom`,
             roomId
           );
-          return batch.commit();
+          return defer(() => batch.commit());
         }),
-        retry({ delay: (err$) => err$.pipe(delay(100)) }),
-        first()
+        retry({ delay: 100 }),
       )
       .subscribe();
     user(this.fireAuth)
@@ -165,26 +158,26 @@ export class AppComponent implements OnInit {
         filter((user): user is User => user !== null),
         combineLatestWith(this.roomId$),
         switchMap(([user, roomId]) =>
-          docSnapshots(doc<RoomData>(this.roomCollection, roomId)).pipe(
-            retry({
-              delay: (err$) => err$.pipe(
-                delayWhen(() => {
+          roomId === null
+            ? EMPTY
+            : docSnapshots(doc<RoomData, DocumentData>(this.roomCollection, roomId)).pipe(
+              retry({
+                delay: () => {
                   const batch = writeBatch(this.firestore);
-                  batch.update(doc<RoomData>(this.roomCollection, roomId), {
+                  batch.update(doc<RoomData, DocumentData>(this.roomCollection, roomId), {
                     members: arrayUnion(user.uid),
                   });
                   batch.update(
-                    doc<UserData>(this.userCollection, user.uid),
+                    doc<UserData, DocumentData>(this.userCollection, user.uid),
                     `forRoom`,
                     roomId
                   );
-                  return batch.commit();
-                })
-              )
-            })
-          )
+                  return defer(() => batch.commit());
+                }
+              })
+            )
         ),
-        retry({ delay: (err$) => err$.pipe(delay(100)) })
+        retry({ delay: 100 })
       )
       .subscribe();
     const roomRaw$ = combineLatest([
@@ -192,15 +185,12 @@ export class AppComponent implements OnInit {
       user(this.fireAuth).pipe(filter((user): user is User => user !== null)),
     ]).pipe(
       switchMap(([roomId]) =>
-        docSnapshots(doc<RoomData>(this.roomCollection, roomId))
+        roomId === null
+          ? EMPTY
+          : docSnapshots(doc<RoomData, DocumentData>(this.roomCollection, roomId))
       ),
-      retry({ delay: (err) => err.pipe(delay(1000)) }),
-      share({
-        connector: () => new ReplaySubject(1),
-        resetOnComplete: true,
-        resetOnError: true,
-        resetOnRefCountZero: true,
-      })
+      retry({ delay: 1000 }),
+      shareLatest(),
     );
     this.roomData$ = roomRaw$.pipe(
       map((snapshot) => snapshot.data()),
@@ -208,6 +198,7 @@ export class AppComponent implements OnInit {
     );
     this.roomExist$ = roomRaw$.pipe(map((snapshot) => snapshot.exists()));
     this.roomVoteCount$ = this.roomData$.pipe(
+      debounceTime(100),
       map((data) => data.voteCount ?? 0)
     );
     this.roomVoteResult$ = roomRaw$.pipe(
@@ -228,20 +219,14 @@ export class AppComponent implements OnInit {
           )
         )
       ),
+      debounceTime(100),
       switchMap(([reveal, voteDoc]) =>
         reveal
           ? docSnapshots(voteDoc).pipe(map((snapshot) => snapshot?.data()))
           : of(undefined)
       ),
       map((roomVoteData) => roomVoteData?.votes ?? null),
-      retry({
-        delay: (err) =>
-          err.pipe(
-            delay(30),
-            tap(() => console.warn("retry"))
-          )
-      }
-      )
+      retry({ delay: () => (console.warn('retry'), timer(30)) }),
     );
     this.voteData$ = combineLatest({
       vote: this.userData$.pipe(map(userData => userData.vote)),
@@ -254,8 +239,19 @@ export class AppComponent implements OnInit {
     );
 
     user(this.fireAuth)
-      .pipe(filter((user) => user === null))
+      .pipe(filter((user) => user === null), retry({ delay: 100 }))
       .subscribe(() => signInAnonymously(this.fireAuth));
+
+    timer(100).pipe(
+      switchMap(() => this.activatedRoute.fragment),
+      map((fragment) => fragment === null || fragment === ""),
+      filter(isNotInHome => isNotInHome),
+      switchMap(() => user(this.fireAuth).pipe(first())),
+      filter((user): user is User => user !== null),
+    ).subscribe(async () => {
+      console.log('logout');
+      await this.fireAuth.signOut();
+    });
   }
 
   public ngOnInit(): void {
@@ -295,7 +291,7 @@ export class AppComponent implements OnInit {
         ),
         map((ref) => ref.id),
         filter((roomId): roomId is string => roomId !== null),
-        retry({ delay: (err$) => err$.pipe(delay(100)) })
+        retry({ delay: 100 }),
       )
       .subscribe((roomId) => {
         this.router.navigate(["/"], { fragment: roomId });
@@ -306,61 +302,80 @@ export class AppComponent implements OnInit {
     combineLatest([
       this.roomId$,
       user(this.fireAuth).pipe(filter((user): user is User => user !== null)),
-      this.userData$.pipe(map((data) => (data as any).vote)),
+      this.userData$.pipe(map((data) => data.vote)),
     ])
       .pipe(first())
-      .subscribe(([roomId, user, currentVote]) => {
-        const isVote = currentVote === undefined;
-        const forv = isVote ? n : currentVote;
+      .subscribe(async ([roomId, user, currentVote]) => {
+        if (roomId === null) return;
         const batch = writeBatch(this.firestore);
         const voteCollection = collection(
           this.firestore,
           `/rooms/${roomId}/vote`
         ) as CollectionReference<RoomVoteData>;
-        const roomDoc = doc<RoomData>(this.roomCollection, roomId);
-        const voteDoc = doc<RoomVoteData>(voteCollection, `vote`);
-        const userDoc = doc<UserData>(this.userCollection, user.uid);
-        batch.update(roomDoc, `voteCount`, increment(isVote ? 1 : -1));
-        batch.update(voteDoc, `votes.${forv}`, increment(isVote ? 1 : -1));
-        batch.update(voteDoc, `for`, forv);
-        batch.update(userDoc, `vote`, isVote ? n : deleteField());
-        batch
-          .commit()
-          .catch((err) => {
-            if (err.code !== `not-found`) {
-              throw err;
-            }
-            // first voter
-            const createBatch = writeBatch(this.firestore);
-            createBatch.update(roomDoc, `voteCount`, 1);
-            createBatch.set(voteDoc, { votes: { [n]: 1 }, for: n });
-            createBatch.update(userDoc, `vote`, n);
-            return createBatch.commit();
-          })
-          .then(() => (isVote ? undefined : this.vote(n)));
+        const roomDoc = doc<RoomData, DocumentData>(this.roomCollection, roomId);
+        const voteDoc = doc<RoomVoteData, DocumentData>(voteCollection, `vote`);
+        const userDoc = doc<UserData, DocumentData>(this.userCollection, user.uid);
+
+        this.prepareVoteBatch(currentVote, n, batch, roomDoc, voteDoc, userDoc);
+
+        let rebatch: WriteBatch | undefined; // after delete
+        if (currentVote !== undefined) {
+          rebatch = writeBatch(this.firestore);
+          this.prepareVoteBatch(undefined, n, rebatch, roomDoc, voteDoc, userDoc);
+        }
+        await this.commitVote(batch, roomDoc, voteDoc, n, userDoc);
+        if (rebatch) await this.commitVote(rebatch, roomDoc, voteDoc, n, userDoc);
       });
+  }
+
+  private prepareVoteBatch = async (currentVote: string | undefined, n: string, batch: WriteBatch, roomDoc: DocumentReference<RoomData, DocumentData>, voteDoc: DocumentReference<RoomVoteData, DocumentData>, userDoc: DocumentReference<UserData, DocumentData>) => {
+    const isVote = currentVote === undefined;
+    const forv = isVote ? n : currentVote;
+    batch.update(roomDoc, `voteCount`, increment(isVote ? 1 : -1));
+    batch.update(voteDoc, `votes.${forv}`, increment(isVote ? 1 : -1));
+    batch.update(voteDoc, `for`, forv);
+    batch.update(userDoc, `vote`, isVote ? n : deleteField());
+  }
+
+  private commitVote = async (batch: WriteBatch, roomDoc: DocumentReference<RoomData, DocumentData>, voteDoc: DocumentReference<RoomVoteData, DocumentData>, n: string, userDoc: DocumentReference<UserData, DocumentData>) => {
+    try {
+      await batch.commit();
+    } catch (err) {
+      if ((err as { code?: string; })?.code !== `not-found`) {
+        throw err;
+      }
+      // first voter
+      const createBatch = writeBatch(this.firestore);
+      createBatch.update(roomDoc, `voteCount`, 1);
+      createBatch.set(voteDoc, { votes: { [n]: 1 }, for: n });
+      createBatch.update(userDoc, `vote`, n);
+      await createBatch.commit();
+    }
   }
 
   public reset(): void {
     combineLatest([this.roomId$, this.roomData$])
       .pipe(first())
       .subscribe(([roomId, roomData]) => {
+        if (roomId === null) return;
         const batch = writeBatch(this.firestore);
         const voteCollection = collection(
           this.firestore,
           `/rooms/${roomId}/vote`
         ) as CollectionReference<RoomVoteData>;
-        const roomDoc = doc<RoomData>(this.roomCollection, roomId);
-        const voteDoc = doc<RoomVoteData>(voteCollection, `vote`);
+        const roomDoc = doc<RoomData, DocumentData>(this.roomCollection, roomId);
+        const voteDoc = doc<RoomVoteData, DocumentData>(voteCollection, `vote`);
         batch.update(roomDoc, `voteCount`, deleteField());
         batch.delete(voteDoc);
         for (const member of roomData.members) {
-          const userDoc = doc<UserData>(this.userCollection, member);
+          const userDoc = doc<UserData, DocumentData>(this.userCollection, member);
           batch.update(userDoc, `vote`, deleteField());
         }
         batch.commit();
       });
   }
+
+  public readonly toggleVoted = (): void => this.showVoted.update((show) => !show);
 }
 
 interface UserData {
